@@ -591,6 +591,7 @@
 
   <div class="nav-tabs" id="navTabs">
     <button class="nav-tab active" id="tabInspection">Inspection</button>
+    <button class="nav-tab" id="tabWarranty">Warranty</button>
     <button class="nav-tab" id="tabLogs" style="display:none;">Event Logs</button>
   </div>
 
@@ -726,6 +727,40 @@
       </div>
     </section>
   </main>
+  </div>
+
+  <div id="tabContentWarranty" style="display:none;">
+    <header>
+      <h1>Warranty Verification</h1>
+      <p>Check device warranty status against vendor support systems (HP, Dell, Lenovo).</p>
+    </header>
+    <main>
+      <div class="card" style="margin-bottom:20px;">
+        <h2>Check Warranty</h2>
+        <label for="warrantyVendor">Vendor</label>
+        <select id="warrantyVendor">
+          <option value="">Select vendor...</option>
+          <option value="hp">HP / Hewlett-Packard</option>
+          <option value="dell">Dell Technologies</option>
+          <option value="lenovo">Lenovo</option>
+          <option value="apple">Apple (manual only)</option>
+          <option value="microsoft">Microsoft (manual only)</option>
+        </select>
+        <label for="warrantySerial">Serial Number / Service Tag</label>
+        <input type="text" id="warrantySerial" placeholder="e.g. 5CG01523C7" style="text-transform:uppercase;font-family:monospace;" />
+        <label for="warrantyDeviceType">Device Type (optional)</label>
+        <select id="warrantyDeviceType">
+          <option value="">Any</option>
+          <option value="laptop">Laptop</option>
+          <option value="desktop">Desktop</option>
+          <option value="monitor">Monitor</option>
+          <option value="tablet">Tablet</option>
+        </select>
+        <button class="btn primary" style="margin-top:18px;width:100%;" id="warrantyCheckBtn" onclick="checkWarranty()">Check Warranty</button>
+      </div>
+      <div id="warrantyResult" style="display:none;"></div>
+      <div id="warrantyHistory" style="margin-top:20px;"></div>
+    </main>
   </div>
 
   <div id="tabContentLogs" style="display:none;">
@@ -1080,22 +1115,119 @@ function enterApp() {
 // ---------- App tabs (Inspection / Event Logs) ----------
 
 function showTab(name) {
-  const isLogs = name === "logs";
-  $("tabContentInspection").style.display = isLogs ? "none" : "block";
-  $("tabContentLogs").style.display = isLogs ? "block" : "none";
-  $("tabInspection").className = "nav-tab" + (isLogs ? "" : " active");
-  $("tabLogs").className = "nav-tab" + (isLogs ? " active" : "");
-  if (isLogs && !logsLoadedOnce) {
+  const tabs = ["inspection", "warranty", "logs"];
+  tabs.forEach(t => {
+    const content = $("tabContent" + t.charAt(0).toUpperCase() + t.slice(1));
+    const btn = $("tab" + t.charAt(0).toUpperCase() + t.slice(1));
+    if (content) content.style.display = (t === name) ? "block" : "none";
+    if (btn) btn.className = "nav-tab" + (t === name ? " active" : "");
+  });
+  if (name === "logs" && !logsLoadedOnce) {
     logsLoadedOnce = true;
     loadLogs();
   }
 }
 
 $("tabInspection").addEventListener("click", () => showTab("inspection"));
+$("tabWarranty").addEventListener("click", () => showTab("warranty"));
 $("tabLogs").addEventListener("click", () => showTab("logs"));
 $("refreshLogsBtn").addEventListener("click", () => loadLogs());
 $("logGroupSelect").addEventListener("change", () => loadLogs());
 $("logRangeSelect").addEventListener("change", () => loadLogs());
+
+// ---------- Warranty Check ----------
+
+let warrantyHistory = [];
+
+async function checkWarranty() {
+  const vendor = $("warrantyVendor").value;
+  const serial = $("warrantySerial").value.trim().toUpperCase();
+  const deviceType = $("warrantyDeviceType").value;
+  const btn = $("warrantyCheckBtn");
+  const resultDiv = $("warrantyResult");
+
+  if (!vendor) { alert("Please select a vendor."); return; }
+  if (!serial) { alert("Please enter a serial number."); return; }
+
+  btn.disabled = true; btn.textContent = "Checking...";
+  resultDiv.style.display = "none";
+
+  try {
+    const data = await invokeWorkflow("/warranty", { serialNumber: serial, vendor, deviceType });
+    resultDiv.style.display = "block";
+    resultDiv.innerHTML = renderWarrantyResult(data);
+    // Add to history
+    warrantyHistory = [data, ...warrantyHistory.filter(h => h.serialNumber !== data.serialNumber)].slice(0, 10);
+    renderWarrantyHistory();
+  } catch (err) {
+    resultDiv.style.display = "block";
+    resultDiv.innerHTML = '<div class="card" style="border-color:var(--danger);"><p style="color:var(--danger);font-weight:600;">Error</p><p style="color:var(--muted);font-size:13px;">' + escapeHtml(err.message || "Warranty check failed") + '</p></div>';
+  } finally {
+    btn.disabled = false; btn.textContent = "Check Warranty";
+  }
+}
+
+function renderWarrantyResult(data) {
+  const statusColors = { ACTIVE: "var(--accent-2)", EXPIRED: "var(--danger)", UNKNOWN: "var(--warn)", NOT_FOUND: "var(--muted)" };
+  const statusIcons = { ACTIVE: "✅", EXPIRED: "❌", UNKNOWN: "⚠️", NOT_FOUND: "❓" };
+  const status = data.warrantyStatus || "UNKNOWN";
+  const color = statusColors[status] || "var(--muted)";
+  const icon = statusIcons[status] || "❓";
+
+  let html = '<div class="card" style="border-color:' + color + ';">';
+  html += '<div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">';
+  html += '<span style="font-size:28px;">' + icon + '</span>';
+  html += '<div><h2 style="margin:0;font-size:18px;color:var(--text);text-transform:none;letter-spacing:0;">Warranty ' + status + '</h2>';
+  if (data.productName) html += '<p style="margin:2px 0 0;font-size:13px;color:var(--muted);">' + escapeHtml(data.productName) + '</p>';
+  html += '</div>';
+  if (data.daysRemaining > 0) html += '<span style="margin-left:auto;font-size:13px;color:' + color + ';font-weight:600;">' + data.daysRemaining + ' days left</span>';
+  html += '</div>';
+
+  if (data.error) {
+    html += '<p style="font-size:13px;color:var(--muted);margin-bottom:12px;padding:10px;background:var(--panel-2);border-radius:8px;">' + escapeHtml(data.error) + '</p>';
+  }
+
+  if (data.valid) {
+    html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">';
+    html += '<div><p style="font-size:11px;color:var(--muted);margin:0;">Vendor</p><p style="font-size:14px;margin:2px 0 0;color:var(--text);">' + escapeHtml(data.vendor) + '</p></div>';
+    html += '<div><p style="font-size:11px;color:var(--muted);margin:0;">Serial Number</p><p style="font-size:14px;margin:2px 0 0;color:var(--text);font-family:monospace;">' + escapeHtml(data.serialNumber) + '</p></div>';
+    html += '<div><p style="font-size:11px;color:var(--muted);margin:0;">Warranty Start</p><p style="font-size:14px;margin:2px 0 0;color:var(--text);">' + (data.warrantyStartDate || "—") + '</p></div>';
+    html += '<div><p style="font-size:11px;color:var(--muted);margin:0;">Warranty End</p><p style="font-size:14px;margin:2px 0 0;color:' + color + ';font-weight:600;">' + (data.warrantyEndDate || "—") + '</p></div>';
+    html += '</div>';
+    if (data.serviceLevel) {
+      html += '<div style="padding:10px;background:var(--panel-2);border-radius:8px;margin-bottom:14px;"><p style="font-size:11px;color:var(--muted);margin:0;">Service Level</p><p style="font-size:14px;margin:2px 0 0;color:var(--text);">' + escapeHtml(data.serviceLevel) + '</p></div>';
+    }
+    if (data.coverages && data.coverages.length > 0) {
+      html += '<p style="font-size:12px;color:var(--muted);margin:0 0 8px;font-weight:600;">Coverage Details</p>';
+      data.coverages.forEach(c => {
+        const cColor = c.status === "ACTIVE" ? "var(--accent-2)" : (c.status === "EXPIRED" ? "var(--danger)" : "var(--muted)");
+        html += '<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:var(--panel-2);border-radius:8px;margin-bottom:6px;">';
+        html += '<div style="display:flex;align-items:center;gap:8px;"><span style="width:8px;height:8px;border-radius:50%;background:' + cColor + ';flex:none;"></span><span style="font-size:13px;color:var(--text);">' + escapeHtml(c.type) + '</span></div>';
+        html += '<span style="font-size:12px;color:' + cColor + ';">' + (c.startDate || "") + " — " + (c.endDate || "") + '</span>';
+        html += '</div>';
+      });
+    }
+  }
+
+  html += '<p style="font-size:11px;color:var(--muted);margin:14px 0 0;opacity:0.7;">Source: ' + (data.source || "—") + ' | Checked: ' + (data.checkedAt ? new Date(data.checkedAt).toLocaleString() : "—") + '</p>';
+  html += '</div>';
+  return html;
+}
+
+function renderWarrantyHistory() {
+  const el = $("warrantyHistory");
+  if (!warrantyHistory.length) { el.innerHTML = ""; return; }
+  let html = '<div class="card"><h2>Recent Lookups</h2>';
+  warrantyHistory.forEach(h => {
+    const color = h.warrantyStatus === "ACTIVE" ? "var(--accent-2)" : (h.warrantyStatus === "EXPIRED" ? "var(--danger)" : "var(--muted)");
+    html += '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px;background:var(--panel-2);border-radius:8px;margin-bottom:6px;cursor:pointer;" onclick="$(&quot;warrantySerial&quot;).value=&quot;' + h.serialNumber + '&quot;;$(&quot;warrantyVendor&quot;).value=&quot;' + (h.vendor||"").toLowerCase() + '&quot;;">';
+    html += '<div><p style="font-size:13px;margin:0;color:var(--text);font-family:monospace;">' + escapeHtml(h.serialNumber) + '</p><p style="font-size:11px;margin:2px 0 0;color:var(--muted);">' + escapeHtml(h.vendor || "") + ' — ' + escapeHtml(h.productName || "Unknown") + '</p></div>';
+    html += '<span style="font-size:11px;font-weight:600;color:' + color + ';">' + (h.warrantyStatus || "?") + '</span>';
+    html += '</div>';
+  });
+  html += '</div>';
+  el.innerHTML = html;
+}
 
 let logsLoadedOnce = false;
 

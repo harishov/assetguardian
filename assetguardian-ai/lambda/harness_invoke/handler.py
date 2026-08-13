@@ -67,6 +67,8 @@ ROUTE_TO_WORKFLOW = {
     "/return": "return",
     "/declare": "declare",
     "/inspect": "inspect",
+    "/warranty": "warranty",
+    "/warranty/vendors": "warranty_vendors",
 }
 
 
@@ -297,6 +299,34 @@ def lambda_handler(event, context):
             return _response(500, {
                 "error": "internal_error",
                 "message": "We couldn't load that just now. Please try again.",
+                "reference": request_id,
+            })
+    # ─── Warranty routes (don't use the inspection pipeline) ─────────────────
+    if path in ("/warranty", "/warranty/vendors"):
+        from agents import warranty_verification
+        try:
+            body = json.loads(event.get("body") or "{}")
+        except json.JSONDecodeError:
+            body = {}
+        try:
+            if path == "/warranty/vendors":
+                return _response(200, {"vendors": warranty_verification.get_supported_vendors()})
+            # POST /warranty — check a serial number
+            serial_number = body.get("serialNumber", "")
+            vendor = body.get("vendor", "")
+            device_type = body.get("deviceType", "")
+            force_refresh = body.get("forceRefresh", False)
+            if not serial_number:
+                return _error(400, "invalid_input", "Serial number is required.", request_id)
+            if not vendor:
+                return _error(400, "invalid_input", "Vendor is required (hp, dell, lenovo).", request_id)
+            result = warranty_verification.run(serial_number, vendor, device_type, force_refresh)
+            return _response(200, result)
+        except Exception:
+            logger.exception("reference=%s code=internal_error path=%s", request_id, path)
+            return _response(500, {
+                "error": "internal_error",
+                "message": "Warranty check failed. Please try again.",
                 "reference": request_id,
             })
 
