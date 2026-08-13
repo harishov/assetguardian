@@ -772,6 +772,7 @@ const CONFIG = {
   // match. The browser refuses to set Host itself, which is what makes this work.
   apiBase: "https://d2xsszrekq4050.cloudfront.net",
   apiSigningHost: "rwgheig8j7.execute-api.ap-southeast-1.amazonaws.com",
+  lambdaUrl: "https://djuak4xkutfu7cifuha5njrpuq0xyvjq.lambda-url.ap-southeast-1.on.aws",
   photosBucket: "assetguardian-asset-photos-418748712186-ap-southeast-1",
   userPoolId: "ap-southeast-1_KDojmmieE",
   userPoolClientId: "k4gl5k5fb6mb597rcqom5g709",
@@ -1042,6 +1043,19 @@ async function invokeWorkflow(route, payload) {
     extraHeaders: { "content-type": "application/json" },
   });
   const resp = await fetch(url, { method: "POST", headers, body });
+  const data = await resp.json();
+  return { httpStatus: resp.status, data };
+}
+
+// Direct Lambda URL invocation (no 30s timeout limit)
+async function invokeLambdaDirect(route, payload) {
+  const url = `${CONFIG.lambdaUrl}${route}`;
+  const body = JSON.stringify(payload);
+  const resp = await fetch(url, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body,
+  });
   const data = await resp.json();
   return { httpStatus: resp.status, data };
 }
@@ -1869,23 +1883,16 @@ $("inspectionForm").addEventListener("submit", async (e) => {
       attestation_confirmed: $("attestationConfirmed") ? $("attestationConfirmed").checked : false,
     };
 
-    const { httpStatus, data } = await invokeWorkflow(route, payload);
+    const { httpStatus, data } = await invokeLambdaDirect(route, payload);
 
-    if (httpStatus === 503) {
-      // Lambda still running — show progress bar (no polling needed, Lambda will finish)
-      setFormStatus($("status"), "");
-      $("results").innerHTML = `<h2>Results</h2>
-        <div class="stage" style="border-color:var(--accent);">
-          <h3>⏳ Processing — please wait</h3>
-          <p style="color:var(--muted);font-size:13px;">The inspection pipeline is running (typically 30–50s). This page will NOT auto-update due to a platform timeout limit.</p>
-          <p style="color:var(--accent-2);font-size:13px;margin-top:10px;font-weight:600;">Please re-submit the inspection. The pipeline has been optimized and should now complete within 30 seconds.</p>
-        </div>`;
-    } else if (httpStatus === 200) {
+    if (httpStatus === 200) {
       setFormStatus($("status"), "✅ Inspection complete!");
       renderResults(workflow, data);
     } else if (httpStatus === 422) {
       setFormStatus($("status"), "");
       renderResults(workflow, data);
+    } else if (httpStatus === 503) {
+      setFormStatus($("status"), "Pipeline timed out. Please try again.", "error");
     } else {
       setFormStatus($("status"), `Done (HTTP ${httpStatus}).`);
       renderResults(workflow, data);

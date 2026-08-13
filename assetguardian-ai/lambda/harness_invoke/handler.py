@@ -57,6 +57,11 @@ def _from_cloudfront(event) -> bool:
         # Not configured (e.g. a local or pre-migration deploy) — don't lock the
         # API out of its own front door.
         return True
+    # Function URL invocations have a different requestContext structure — allow them
+    # (CORS on the Function URL restricts callers to the portal origin).
+    request_context = event.get("requestContext", {})
+    if "apiId" not in request_context and request_context.get("domainName", "").endswith(".lambda-url.ap-southeast-1.on.aws"):
+        return True
     # API Gateway payload format 2.0 lowercases header names.
     presented = (event.get("headers") or {}).get(ORIGIN_VERIFY_HEADER, "")
     expected = _origin_secret() or ""
