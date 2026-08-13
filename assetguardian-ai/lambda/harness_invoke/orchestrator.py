@@ -127,8 +127,7 @@ def _run_warranty(identity: dict, serial_number: str = "") -> dict:
     """Check warranty against vendor's support site.
 
     Uses the CMDB record to determine vendor, then queries the vendor API.
-    Non-blocking: if the check fails, returns a partial result rather than
-    halting the pipeline.
+    Non-blocking with a 5-second timeout to stay within API Gateway limits.
     """
     from agents import warranty_verification
 
@@ -150,7 +149,6 @@ def _run_warranty(identity: dict, serial_number: str = "") -> dict:
         vendor = "microsoft"
 
     if not vendor:
-        # Try to guess from CMDB manufacturer field
         manufacturer = (record.get("manufacturer") or "").lower()
         for v in ("hp", "dell", "lenovo", "apple", "microsoft"):
             if v in manufacturer:
@@ -166,15 +164,29 @@ def _run_warranty(identity: dict, serial_number: str = "") -> dict:
             "source": "skipped",
         }
 
+    # Run with a 5-second timeout to avoid pushing pipeline over 30s
+    import concurrent.futures
     try:
-        return warranty_verification.run(serial, vendor)
+        with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
+            future = executor.submit(warranty_verification.run, serial, vendor)
+            return future.result(timeout=5)
+    except concurrent.futures.TimeoutError:
+        return {
+            "vendor": vendor,
+            "serialNumber": serial,
+            "warrantyStatus": "UNKNOWN",
+            "warrantyEndDate": record.get("warrantyEndDate"),
+            "error": "Warranty check timed out (5s limit). Using cached CMDB data.",
+            "source": "timeout_fallback",
+            "cmdbWarrantyActive": record.get("warrantyActive", False),
+        }
     except Exception as e:
         logger.warning("Warranty check failed (non-blocking): %s", e)
         return {
             "vendor": vendor,
             "serialNumber": serial,
             "warrantyStatus": "UNKNOWN",
-            "error": f"Warranty check encountered an error: {str(e)[:80]}",
+            "error": f"Warranty check error: {str(e)[:80]}",
             "source": "error",
         }
 
@@ -209,10 +221,16 @@ def employee_handover(req: dict) -> dict:
     if video_stage:
         stages["video_evidence"] = video_stage
 
-    damage = damage_detection.run(req["bucket"], _damage_keys(req), req.get("device_type", "laptop"))
+    # Run damage detection and warranty check in parallel
+    import concurrent.futures
+    with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
+        damage_future = executor.submit(damage_detection.run, req["bucket"], _damage_keys(req), req.get("device_type", "laptop"))
+        warranty_future = executor.submit(_run_warranty, stages["identity_verification"], req.get("serial_number", ""))
+        damage = damage_future.result()
+        stages["warranty_verification"] = warranty_future.result()
+
     stages["damage_detection"] = damage
     stages["lifecycle_decision"] = _run_lifecycle(stages["identity_verification"], damage)
-    stages["warranty_verification"] = _run_warranty(stages["identity_verification"], req.get("serial_number", ""))
     stages["quality_evaluation"] = evaluators.run_all(
         damage_result=damage, lifecycle_result=stages["lifecycle_decision"], fraud_result=fraud
     )
@@ -231,16 +249,18 @@ def asset_return(req: dict) -> dict:
     if video_stage:
         stages["video_evidence"] = video_stage
 
-    damage = damage_detection.run(req["bucket"], _damage_keys(req), req.get("device_type", "laptop"))
+    # Run damage, display, and warranty in parallel
+    import concurrent.futures
+    with concurrent.futures.ThreadPoolExecutor(max_workers=3) as executor:
+        damage_future = executor.submit(damage_detection.run, req["bucket"], _damage_keys(req), req.get("device_type", "laptop"))
+        display_future = executor.submit(display_health.run, req["bucket"], req.get("white_screen_key"), req.get("black_screen_key"), req.get("color_pattern_key"))
+        warranty_future = executor.submit(_run_warranty, stages["identity_verification"], req.get("serial_number", ""))
+        damage = damage_future.result()
+        stages["display_health"] = display_future.result()
+        stages["warranty_verification"] = warranty_future.result()
+
     stages["damage_detection"] = damage
-    stages["display_health"] = display_health.run(
-        req["bucket"],
-        req.get("white_screen_key"),
-        req.get("black_screen_key"),
-        req.get("color_pattern_key"),
-    )
     stages["lifecycle_decision"] = _run_lifecycle(stages["identity_verification"], damage)
-    stages["warranty_verification"] = _run_warranty(stages["identity_verification"], req.get("serial_number", ""))
     stages["quality_evaluation"] = evaluators.run_all(
         damage_result=damage, lifecycle_result=stages["lifecycle_decision"], fraud_result=fraud
     )
@@ -263,10 +283,16 @@ def annual_self_declaration(req: dict) -> dict:
     if video_stage:
         stages["video_evidence"] = video_stage
 
-    damage = damage_detection.run(req["bucket"], _damage_keys(req), req.get("device_type", "laptop"))
+    # Run damage and warranty in parallel
+    import concurrent.futures
+    with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
+        damage_future = executor.submit(damage_detection.run, req["bucket"], _damage_keys(req), req.get("device_type", "laptop"))
+        warranty_future = executor.submit(_run_warranty, stages["identity_verification"], req.get("serial_number", ""))
+        damage = damage_future.result()
+        stages["warranty_verification"] = warranty_future.result()
+
     stages["damage_detection"] = damage
     stages["lifecycle_decision"] = _run_lifecycle(stages["identity_verification"], damage)
-    stages["warranty_verification"] = _run_warranty(stages["identity_verification"], req.get("serial_number", ""))
     stages["quality_evaluation"] = evaluators.run_all(
         damage_result=damage, lifecycle_result=stages["lifecycle_decision"], fraud_result=fraud
     )
@@ -286,10 +312,18 @@ def adhoc_inspection(req: dict) -> dict:
     if video_stage:
         stages["video_evidence"] = video_stage
 
+    # Run damage and warranty in parallel
+    import concurrent.futures
     damage = None
-    if req.get("check_physical_damage", True):
-        damage = damage_detection.run(req["bucket"], _damage_keys(req), req.get("device_type", "laptop"))
-        stages["damage_detection"] = damage
+    with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
+        if req.get("check_physical_damage", True):
+            damage_future = executor.submit(damage_detection.run, req["bucket"], _damage_keys(req), req.get("device_type", "laptop"))
+        warranty_future = executor.submit(_run_warranty, stages["identity_verification"], req.get("serial_number", ""))
+
+        if req.get("check_physical_damage", True):
+            damage = damage_future.result()
+            stages["damage_detection"] = damage
+        stages["warranty_verification"] = warranty_future.result()
 
     if req.get("check_display_health"):
         stages["display_health"] = display_health.run(
@@ -301,8 +335,6 @@ def adhoc_inspection(req: dict) -> dict:
 
     if damage is not None:
         stages["lifecycle_decision"] = _run_lifecycle(stages["identity_verification"], damage)
-
-    stages["warranty_verification"] = _run_warranty(stages["identity_verification"], req.get("serial_number", ""))
 
     stages["quality_evaluation"] = evaluators.run_all(
         damage_result=damage, lifecycle_result=stages.get("lifecycle_decision"), fraud_result=fraud
