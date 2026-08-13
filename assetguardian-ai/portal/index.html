@@ -630,8 +630,9 @@
           <p class="field-error" id="employeeIdError"></p>
         </div>
         <div>
-          <label for="deviceType">Device Type</label>
+          <label for="deviceType">Device Type <span style="font-size:11px;color:var(--muted);">(auto-detected from photos)</span></label>
           <select id="deviceType">
+            <option value="auto">Auto-detect from photos</option>
             <option value="laptop">Laptop</option>
             <option value="monitor">Monitor</option>
             <option value="phone">Phone</option>
@@ -1090,9 +1091,9 @@ function enterApp() {
   showTab("inspection");
   showView("app");
 
-  // Restore last inspection result if available
+  // Restore last inspection result for THIS user only
   try {
-    const saved = localStorage.getItem("ag_last_result");
+    const saved = localStorage.getItem("ag_last_result_" + (session?.email || ""));
     if (saved) {
       const { workflow, data, savedAt } = JSON.parse(saved);
       // Show results if saved within last 24 hours
@@ -1443,6 +1444,8 @@ $("resetBtn").addEventListener("click", async () => {
 // ---------- Sign out ----------
 
 $("signOutBtn").addEventListener("click", () => {
+  // Clear user-scoped results
+  try { localStorage.removeItem("ag_last_result_" + (session?.email || "")); } catch {}
   session = null;
   cachedCredentials = null;
   saveSession();
@@ -1470,8 +1473,8 @@ function escapeHtml(value) {
 }
 
 function renderResults(workflow, data) {
-  // Persist results to localStorage so they survive page refresh
-  try { localStorage.setItem("ag_last_result", JSON.stringify({ workflow, data, savedAt: Date.now() })); } catch {}
+  // Persist results to localStorage scoped to current user
+  try { localStorage.setItem("ag_last_result_" + (session?.email || ""), JSON.stringify({ workflow, data, savedAt: Date.now() })); } catch {}
 
   const el = $("results");
   const stages = data.stages || {};
@@ -1521,12 +1524,17 @@ function renderResults(workflow, data) {
 
   const dd = stages.damage_detection;
   if (dd) {
+    const mismatchWarning = dd.device_type_match === false
+      ? `<p style="color:var(--danger);font-size:12px;margin-top:8px;font-weight:600;">⚠️ DEVICE MISMATCH: Declared "${dd.declared_device_type || "—"}" but photos show "${dd.detected_device_type || "—"}". ${dd.device_mismatch_detail || ""}</p>`
+      : "";
     html += `<div class="stage"><h3>Damage Detection ${pill(dd.severity_category ?? "—", dd.severity_category === "None" || dd.severity_category === "Minor" ? "ok" : dd.severity_category === "Moderate" ? "warn" : "bad")}</h3>
       <div class="kv">
+        <dt>Detected device</dt><dd>${dd.detected_device_type || "—"} (${dd.detected_device_brand || "—"})</dd>
+        <dt>Device match</dt><dd>${dd.device_type_match === false ? "❌ MISMATCH" : "✓ Match"}</dd>
         <dt>Severity score</dt><dd>${dd.damage_severity_score ?? "—"} / 100</dd>
         <dt>Condition grade</dt><dd>${dd.condition_grade ?? "—"}</dd>
         <dt>Findings</dt><dd>${(dd.detected_damage || []).map((d) => d.type).join(", ") || "none"}</dd>
-      </div></div>`;
+      </div>${mismatchWarning}</div>`;
   }
 
   const dh = stages.display_health;
@@ -1588,7 +1596,98 @@ function renderResults(workflow, data) {
   }
 
   html += `<details><summary>Raw JSON response</summary><pre>${JSON.stringify(data, null, 2)}</pre></details>`;
+
+  // Action buttons: PDF, Email, New Inspection — only show for successful results
+  if (!data.error) {
+    html += `<div style="display:flex;gap:10px;margin-top:18px;flex-wrap:wrap;">
+      <button class="btn primary" onclick="saveResultPDF()" style="padding:10px 18px;font-size:13px;">📄 Save as PDF</button>
+      <button class="btn secondary" onclick="emailResult()" style="padding:10px 18px;font-size:13px;">📧 Email to Employee</button>
+      <button class="btn secondary" onclick="startNewInspection()" style="padding:10px 18px;font-size:13px;">🔄 New Inspection</button>
+    </div>`;
+  }
+  if (data.pipeline_elapsed_seconds) {
+    html += `<p style="font-size:11px;color:var(--muted);margin-top:10px;">Inspection ID: ${data.inspectionId || "—"} | Pipeline: ${data.pipeline_elapsed_seconds}s</p>`;
+  }
+
   el.innerHTML = html;
+}
+
+// ---------- PDF Export ----------
+function saveResultPDF() {
+  const el = $("results");
+  if (!el) return;
+  const win = window.open("", "_blank");
+  win.document.write(`<!DOCTYPE html><html><head><title>AssetGuardian Inspection Report</title>
+    <style>
+      body { font-family: -apple-system, sans-serif; padding: 40px; color: #1a1a2e; max-width: 800px; margin: 0 auto; }
+      h1 { font-size: 22px; margin-bottom: 4px; }
+      h2 { font-size: 14px; color: #666; text-transform: uppercase; margin: 24px 0 8px; letter-spacing: 0.05em; }
+      h3 { font-size: 15px; margin: 0 0 8px; }
+      .stage { border: 1px solid #ddd; border-radius: 8px; padding: 16px; margin-bottom: 12px; }
+      .kv { display: grid; grid-template-columns: 160px 1fr; gap: 4px 12px; font-size: 13px; }
+      .kv dt { color: #666; } .kv dd { margin: 0; font-weight: 500; }
+      .pill { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+      .pill.ok { background: #d1fae5; color: #065f46; }
+      .pill.bad { background: #fee2e2; color: #991b1b; }
+      .pill.warn { background: #fef3c7; color: #92400e; }
+      details { display: none; }
+      button { display: none; }
+      @media print { body { padding: 20px; } }
+    </style>
+  </head><body>
+    <h1>🛡️ AssetGuardian AI — Inspection Report</h1>
+    <p style="font-size:12px;color:#666;">Generated: ${new Date().toLocaleString()} | Portal: https://dn40ox0gzb4b1.cloudfront.net</p>
+    <hr style="margin:16px 0;border:none;border-top:1px solid #eee;">
+    ${el.innerHTML}
+  </body></html>`);
+  win.document.close();
+  setTimeout(() => { win.print(); }, 500);
+}
+
+// ---------- Email Result ----------
+async function emailResult() {
+  const saved = localStorage.getItem("ag_last_result_" + (session?.email || ""));
+  if (!saved) { alert("No inspection result to email."); return; }
+  const { workflow, data } = JSON.parse(saved);
+  const stages = data.stages || {};
+  const identity = stages.identity_verification || {};
+  const lifecycle = stages.lifecycle_decision || {};
+  const warranty = stages.warranty_verification || {};
+  const damage = stages.damage_detection || {};
+
+  const subject = `AssetGuardian Inspection Report — ${identity.cmdb_record?.assetId || "Unknown Asset"} — ${lifecycle.decision || "Pending"}`;
+  const body = [
+    `Inspection Report`,
+    `=================`,
+    `Workflow: ${data.workflow || workflow}`,
+    `Date: ${new Date().toLocaleString()}`,
+    `Pipeline time: ${data.pipeline_elapsed_seconds || "—"}s`,
+    ``,
+    `Identity: ${identity.verified ? "Verified" : "Not Verified"} | Device: ${identity.cmdb_record?.deviceModel || "—"}`,
+    `Damage: Score ${damage.damage_severity_score || "—"}/100 | ${damage.severity_category || "—"}`,
+    `Fraud: ${stages.fraud_detection?.risk_level || "—"} risk`,
+    `Lifecycle: ${lifecycle.decision || "—"} | Reason: ${lifecycle.reason || "—"}`,
+    `Warranty: ${warranty.warrantyStatus || "N/A"} | Ends: ${warranty.warrantyEndDate || "—"}`,
+    ``,
+    `View full results: https://dn40ox0gzb4b1.cloudfront.net`,
+  ].join("\n");
+
+  // Open mailto link (works without backend email setup)
+  const mailto = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  window.open(mailto, "_self");
+}
+
+// ---------- New Inspection ----------
+function startNewInspection() {
+  // Clear cached result for this user
+  try { localStorage.removeItem("ag_last_result_" + (session?.email || "")); } catch {}
+  // Reset form
+  const form = $("inspectionForm");
+  if (form) form.reset();
+  // Clear results section
+  $("results").innerHTML = `<h2>Results</h2><div class="placeholder">Nothing submitted yet. When you run an inspection, these stages execute in order — the first two can stop the run before it reaches the AI analysis.</div>`;
+  // Scroll to top
+  window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
 // ---------- Photo & video capture ----------
@@ -1883,20 +1982,10 @@ $("inspectionForm").addEventListener("submit", async (e) => {
       attestation_confirmed: $("attestationConfirmed") ? $("attestationConfirmed").checked : false,
     };
 
-    const { httpStatus, data } = await invokeLambdaDirect(route, payload);
-
-    if (httpStatus === 200) {
-      setFormStatus($("status"), "✅ Inspection complete!");
-      renderResults(workflow, data);
-    } else if (httpStatus === 422) {
-      setFormStatus($("status"), "");
-      renderResults(workflow, data);
-    } else if (httpStatus === 503) {
-      setFormStatus($("status"), "Pipeline timed out. Please try again.", "error");
-    } else {
-      setFormStatus($("status"), `Done (HTTP ${httpStatus}).`);
-      renderResults(workflow, data);
-    }
+    setFormStatus($("status"), "🔄 Running inspection pipeline…");
+    const { httpStatus, data } = await invokeWorkflow(route, payload);
+    setFormStatus($("status"), `Done (HTTP ${httpStatus}).`);
+    renderResults(workflow, data);
   } catch (err) {
     // Technical detail stays in the browser console; the person sees a sentence
     // they can act on. Anything server-side is already logged with a reference.
