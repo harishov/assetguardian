@@ -1,0 +1,1 @@
+{"statusCode": 403, "headers": {"Content-Type": "application/json"}, "body": "{\"error\": \"forbidden\", \"message\": \"This request didn't come through the AssetGuardian portal. Please open the portal and try again.\", \"reference\": \"bce3023b-57a0-4d9a-a897-138513e9f9fa\"}"}

@@ -122,6 +122,62 @@ def _run_lifecycle(identity: dict, damage: dict) -> dict:
     )
 
 
+def _run_warranty(identity: dict, serial_number: str = "") -> dict:
+    """Check warranty against vendor's support site.
+
+    Uses the CMDB record to determine vendor, then queries the vendor API.
+    Non-blocking: if the check fails, returns a partial result rather than
+    halting the pipeline.
+    """
+    from agents import warranty_verification
+
+    record = identity.get("cmdb_record", {})
+    device_model = (record.get("deviceModel") or "").lower()
+    serial = serial_number or record.get("serialNumber", "")
+
+    # Determine vendor from device model
+    vendor = ""
+    if any(v in device_model for v in ("hp", "elitebook", "probook", "zbook", "pavilion", "envy")):
+        vendor = "hp"
+    elif any(v in device_model for v in ("dell", "latitude", "optiplex", "precision", "inspiron", "xps")):
+        vendor = "dell"
+    elif any(v in device_model for v in ("lenovo", "thinkpad", "ideapad", "thinkcentre", "yoga")):
+        vendor = "lenovo"
+    elif any(v in device_model for v in ("apple", "macbook", "imac", "mac")):
+        vendor = "apple"
+    elif any(v in device_model for v in ("surface", "microsoft")):
+        vendor = "microsoft"
+
+    if not vendor:
+        # Try to guess from CMDB manufacturer field
+        manufacturer = (record.get("manufacturer") or "").lower()
+        for v in ("hp", "dell", "lenovo", "apple", "microsoft"):
+            if v in manufacturer:
+                vendor = v
+                break
+
+    if not vendor or not serial:
+        return {
+            "vendor": vendor or "unknown",
+            "serialNumber": serial,
+            "warrantyStatus": "UNKNOWN",
+            "error": "Could not determine vendor or serial number from device records.",
+            "source": "skipped",
+        }
+
+    try:
+        return warranty_verification.run(serial, vendor)
+    except Exception as e:
+        logger.warning("Warranty check failed (non-blocking): %s", e)
+        return {
+            "vendor": vendor,
+            "serialNumber": serial,
+            "warrantyStatus": "UNKNOWN",
+            "error": f"Warranty check encountered an error: {str(e)[:80]}",
+            "source": "error",
+        }
+
+
 def _finish(workflow: str, sla_hours: int, started_at: float, stages: dict) -> dict:
     elapsed_seconds = round(time.time() - started_at, 2)
     return {
@@ -155,6 +211,7 @@ def employee_handover(req: dict) -> dict:
     damage = damage_detection.run(req["bucket"], _damage_keys(req), req.get("device_type", "laptop"))
     stages["damage_detection"] = damage
     stages["lifecycle_decision"] = _run_lifecycle(stages["identity_verification"], damage)
+    stages["warranty_verification"] = _run_warranty(stages["identity_verification"], req.get("serial_number", ""))
     stages["quality_evaluation"] = evaluators.run_all(
         damage_result=damage, lifecycle_result=stages["lifecycle_decision"], fraud_result=fraud
     )
@@ -182,6 +239,7 @@ def asset_return(req: dict) -> dict:
         req.get("color_pattern_key"),
     )
     stages["lifecycle_decision"] = _run_lifecycle(stages["identity_verification"], damage)
+    stages["warranty_verification"] = _run_warranty(stages["identity_verification"], req.get("serial_number", ""))
     stages["quality_evaluation"] = evaluators.run_all(
         damage_result=damage, lifecycle_result=stages["lifecycle_decision"], fraud_result=fraud
     )
@@ -207,6 +265,7 @@ def annual_self_declaration(req: dict) -> dict:
     damage = damage_detection.run(req["bucket"], _damage_keys(req), req.get("device_type", "laptop"))
     stages["damage_detection"] = damage
     stages["lifecycle_decision"] = _run_lifecycle(stages["identity_verification"], damage)
+    stages["warranty_verification"] = _run_warranty(stages["identity_verification"], req.get("serial_number", ""))
     stages["quality_evaluation"] = evaluators.run_all(
         damage_result=damage, lifecycle_result=stages["lifecycle_decision"], fraud_result=fraud
     )
@@ -241,6 +300,8 @@ def adhoc_inspection(req: dict) -> dict:
 
     if damage is not None:
         stages["lifecycle_decision"] = _run_lifecycle(stages["identity_verification"], damage)
+
+    stages["warranty_verification"] = _run_warranty(stages["identity_verification"], req.get("serial_number", ""))
 
     stages["quality_evaluation"] = evaluators.run_all(
         damage_result=damage, lifecycle_result=stages.get("lifecycle_decision"), fraud_result=fraud
