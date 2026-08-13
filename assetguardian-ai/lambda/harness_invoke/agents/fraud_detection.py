@@ -126,14 +126,30 @@ def run(
         image_keys=image_keys,
         system_prompt=SYSTEM_PROMPT,
         instruction=(
-            "Assess whether these photos appear to be genuine, freshly-captured "
-            "photos of a physically present device, versus a stock photo, an "
-            "old/reused photo, or a manipulated/composited image. Give a "
-            "confidence score 0.0-1.0 that the submission is legitimate."
+            "CRITICAL VERIFICATION: Assess whether these photos are GENUINE, "
+            "FRESHLY-CAPTURED photos of a PHYSICALLY PRESENT device taken by "
+            "the person submitting this inspection.\n\n"
+            "REJECT (legitimacy_confidence < 0.3) if ANY of these are true:\n"
+            "- Photos look like stock photography (clean studio lighting, "
+            "perfect angles, no workplace context, generic backgrounds)\n"
+            "- Photos appear downloaded from the internet (watermarks, "
+            "unnaturally high quality, product marketing style)\n"
+            "- Device is shown on a pure white/gradient background (studio shot)\n"
+            "- No personal workspace context visible (desk, papers, cables, etc.)\n"
+            "- Photos look too perfect/professional for a quick employee submission\n"
+            "- Multiple photos appear to be of different devices\n"
+            "- Screen shows a desktop/content inconsistent with a real inspection\n\n"
+            "ACCEPT (legitimacy_confidence > 0.7) only if:\n"
+            "- Photos clearly show a real device in a real workplace/office setting\n"
+            "- Lighting is natural/office (not studio)\n"
+            "- Some imperfection visible (slight blur, angle, background clutter)\n"
+            "- Photos are consistent with each other (same device, same location)\n\n"
+            "Be STRICT. It's better to reject a legitimate photo than accept a stock photo."
         ),
         response_schema_hint=(
             '{"legitimacy_confidence": number, "manipulation_indicators": [string], '
-            '"looks_like_stock_photo": bool, "notes": string}'
+            '"looks_like_stock_photo": boolean, "is_genuine_workplace_photo": boolean, '
+            '"rejection_reasons": [string], "notes": string}'
         ),
     )
 
@@ -149,8 +165,13 @@ def run(
         if v is False
     )
     legitimacy_confidence = vision_result.get("legitimacy_confidence", 0.5)
+    is_stock_photo = vision_result.get("looks_like_stock_photo", False)
+    is_genuine = vision_result.get("is_genuine_workplace_photo", True)
 
-    if failed_checks >= 3 or legitimacy_confidence < 0.3:
+    # Stock photo or very low confidence = automatic Critical
+    if is_stock_photo or legitimacy_confidence < 0.3 or (not is_genuine and legitimacy_confidence < 0.5):
+        risk_level = "Critical"
+    elif failed_checks >= 3:
         risk_level = "Critical"
     elif failed_checks == 2 or legitimacy_confidence < 0.5:
         risk_level = "High"
@@ -169,6 +190,8 @@ def run(
         "photo_hashes": hashes,
         "legitimacy_confidence": legitimacy_confidence,
         "manipulation_indicators": vision_result.get("manipulation_indicators", []),
-        "looks_like_stock_photo": vision_result.get("looks_like_stock_photo", False),
+        "looks_like_stock_photo": is_stock_photo,
+        "is_genuine_workplace_photo": is_genuine,
+        "rejection_reasons": vision_result.get("rejection_reasons", []),
         "notes": vision_result.get("notes", ""),
     }

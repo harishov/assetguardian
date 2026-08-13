@@ -99,6 +99,11 @@ def _run_vision_and_fraud(req: dict, image_keys: list[str]) -> tuple[dict, dict]
         expected_site_coordinates=req.get("expected_site_coordinates"),
         prior_photo_hashes=req.get("prior_photo_hashes", []),
     )
+
+    # Halt on Critical fraud (stock photos, manipulated images)
+    if fraud.get("risk_level") == "Critical":
+        raise PipelineHaltedError("fraud_detection", fraud)
+
     return quality, fraud
 
 

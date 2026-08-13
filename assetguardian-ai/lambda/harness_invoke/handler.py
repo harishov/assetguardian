@@ -96,6 +96,12 @@ _HALT_MESSAGES = {
         "The photos weren't clear enough to assess. Please retake them in good "
         "light, with the whole device in frame."
     ),
+    "fraud_detection": (
+        "These photos don't appear to be genuine photos of your device. "
+        "Please take fresh photos of the actual physical device in your "
+        "workplace — stock images, internet downloads, and previously used "
+        "photos are not accepted."
+    ),
 }
 
 _GENERIC_HALT_MESSAGE = (
