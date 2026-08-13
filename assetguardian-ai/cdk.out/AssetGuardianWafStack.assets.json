@@ -1,0 +1,21 @@
+{
+  "version": "54.0.0",
+  "files": {
+    "2d369556dd8b51fd0aaa06ce2f8b8a17a546515c37165e7452024eba600151fd": {
+      "displayName": "AssetGuardianWafStack Template",
+      "source": {
+        "path": "AssetGuardianWafStack.template.json",
+        "packaging": "file"
+      },
+      "destinations": {
+        "418748712186-us-east-1-a81f4113": {
+          "bucketName": "cdk-hnb659fds-assets-418748712186-us-east-1",
+          "objectKey": "2d369556dd8b51fd0aaa06ce2f8b8a17a546515c37165e7452024eba600151fd.json",
+          "region": "us-east-1",
+          "assumeRoleArn": "arn:${AWS::Partition}:iam::418748712186:role/cdk-hnb659fds-file-publishing-role-418748712186-us-east-1"
+        }
+      }
+    }
+  },
+  "dockerImages": {}
+}

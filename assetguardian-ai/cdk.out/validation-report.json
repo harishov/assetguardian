@@ -1,0 +1,46 @@
+{
+  "version": "54.0.0",
+  "title": "Validation Report",
+  "pluginReports": [
+    {
+      "pluginName": "CloudFormation Validate",
+      "pluginVersion": "1.6.0",
+      "conclusion": "success",
+      "metadata": {},
+      "violations": [],
+      "suppressedViolations": [
+        {
+          "ruleName": "W3045",
+          "description": "AccessControl: AccessControl property is deprecated. Use bucket policies instead",
+          "suggestedFix": "Remove AccessControl and use an AWS::S3::BucketPolicy resource",
+          "severity": "warning",
+          "ruleMetadata": {
+            "category": "Deprecation"
+          },
+          "violatingConstructs": [
+            {
+              "constructPath": "AssetGuardianAiStack-ap-southeast-1/AccessLogsBucket/Resource",
+              "constructFqn": "aws-cdk-lib.aws_s3.CfnBucket",
+              "libraryVersion": "2.263.0",
+              "cloudFormationResource": {
+                "templatePath": "AssetGuardianAiStack-ap-southeast-1.template.json",
+                "logicalId": "AccessLogsBucket83982689",
+                "propertyPaths": [
+                  "Properties.AccessControl"
+                ]
+              },
+              "stackTraces": [
+                "...aws-cdk-lib, jsii runtime, node internals...",
+                "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+              ]
+            }
+          ],
+          "acknowledgedId": "CloudFormation-Validate::W3045",
+          "reason": "accessControl is deprecated, but we are still using it for historical reasons.",
+          "acknowledgedAt": "AssetGuardianAiStack-ap-southeast-1/AccessLogsBucket",
+          "acknowledgedStackTrace": "    ...aws-cdk-lib, jsii runtime...\n    (no user code in 10 frames, use --stack-trace-limit to capture more)"
+        }
+      ]
+    }
+  ]
+}

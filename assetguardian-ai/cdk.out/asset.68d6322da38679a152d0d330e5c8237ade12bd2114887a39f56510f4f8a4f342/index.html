@@ -1,0 +1,1250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AssetGuardian AI — Enterprise Asset Inspection</title>
+<style>
+  :root {
+    --bg: #0b1220;
+    --panel: #121a2b;
+    --panel-2: #182238;
+    --border: #263149;
+    --text: #e6ebf5;
+    --muted: #93a1bd;
+    --accent: #4f8cff;
+    --accent-2: #6ee7b7;
+    --danger: #ff6b6b;
+    --warn: #ffb454;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: linear-gradient(180deg, #0b1220 0%, #0d1526 100%);
+    color: var(--text);
+    min-height: 100vh;
+  }
+  a { color: var(--accent); }
+  .view { min-height: 100vh; }
+
+  /* ---------- Hero ---------- */
+  #view-hero {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    padding: 40px 24px;
+  }
+  .hero-bg { position: absolute; inset: 0; z-index: 0; overflow: hidden; }
+  .blob { position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.35; }
+  .blob.b1 { width: 520px; height: 520px; background: var(--accent); top: -160px; left: -140px; }
+  .blob.b2 { width: 460px; height: 460px; background: var(--accent-2); bottom: -180px; right: -120px; opacity: 0.22; }
+  .blob.b3 { width: 320px; height: 320px; background: #8b6ef8; top: 40%; left: 55%; opacity: 0.18; }
+  .hero-content {
+    position: relative;
+    z-index: 1;
+    max-width: 720px;
+    text-align: center;
+  }
+  .logo-mark { width: 84px; height: 84px; margin: 0 auto 22px; display: block; }
+  .logo-mark-sm { width: 30px; height: 30px; display: block; }
+  .hero-content h1 {
+    font-size: 42px;
+    margin: 0 0 14px;
+    letter-spacing: -0.02em;
+    background: linear-gradient(90deg, #fff, var(--accent-2));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .hero-content .tagline {
+    font-size: 16.5px;
+    color: var(--muted);
+    line-height: 1.6;
+    max-width: 560px;
+    margin: 0 auto 32px;
+  }
+  .hero-actions { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; margin-bottom: 40px; }
+  .btn {
+    border: none;
+    border-radius: 10px;
+    padding: 13px 26px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.15s, transform 0.1s;
+  }
+  .btn:hover { opacity: 0.92; }
+  .btn:active { transform: translateY(1px); }
+  .btn.primary { background: var(--accent); color: #fff; }
+  .btn.secondary { background: transparent; color: var(--text); border: 1px solid var(--border); }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .hero-features {
+    display: flex;
+    gap: 28px;
+    justify-content: center;
+    flex-wrap: wrap;
+    color: var(--muted);
+    font-size: 13.5px;
+  }
+  .hero-features .feature { display: flex; align-items: center; gap: 8px; }
+
+  /* ---------- Auth ---------- */
+  #view-auth {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+  }
+  .auth-card {
+    width: 100%;
+    max-width: 400px;
+  }
+  .auth-card .brand-row { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
+  .auth-card .brand-row span { font-weight: 700; font-size: 15px; }
+  .auth-card h2 { margin: 0 0 6px; font-size: 20px; }
+  .auth-card .hint { font-size: 13px; color: var(--muted); margin: 0 0 18px; line-height: 1.5; }
+  .switch { font-size: 13px; color: var(--muted); margin-top: 16px; text-align: center; }
+
+  /* ---------- Shared form styling ---------- */
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px;
+  }
+  .card h2 { margin: 0 0 14px; font-size: 15px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+  label { display: block; font-size: 13px; color: var(--muted); margin: 14px 0 6px; }
+  label:first-of-type { margin-top: 0; }
+  input[type=text], input[type=password], input[type=email], select, textarea {
+    width: 100%;
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    padding: 10px 12px;
+    font-size: 14px;
+    outline: none;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--accent); }
+  input.invalid, input.invalid:focus { border-color: var(--danger); background: rgba(255,107,107,0.08); }
+  .field-error {
+    display: none;
+    font-size: 12px;
+    color: var(--danger);
+    margin-top: 6px;
+    line-height: 1.4;
+  }
+  .field-error.show { display: block; }
+  input[type=file] {
+    width: 100%;
+    font-size: 13px;
+    color: var(--muted);
+    background: var(--panel-2);
+    border: 1px dashed var(--border);
+    border-radius: 8px;
+    padding: 10px;
+  }
+  .row { display: flex; gap: 10px; }
+  .row > div { flex: 1; }
+  .checkbox-row { display: flex; align-items: center; gap: 8px; margin-top: 14px; font-size: 13px; color: var(--muted); }
+  .checkbox-row input { width: auto; }
+  button.full {
+    margin-top: 20px;
+    width: 100%;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 13px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.15s;
+  }
+  button.full:hover { opacity: 0.9; }
+  button.full:disabled { opacity: 0.5; cursor: not-allowed; }
+  .form-status {
+    font-size: 13px;
+    margin-top: 12px;
+    color: var(--muted);
+    min-height: 18px;
+  }
+  .form-status.error { color: var(--danger); }
+  .form-status.ok { color: var(--accent-2); }
+
+  /* ---------- App shell ---------- */
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 18px 32px 0;
+  }
+  .topbar-brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 15px; }
+  .topbar-user { display: flex; align-items: center; gap: 12px; font-size: 13px; color: var(--muted); }
+  .topbar-user .pill.admin { background: rgba(255,180,84,0.15); color: var(--warn); }
+  .topbar-user .pill.employee { background: rgba(79,140,255,0.15); color: var(--accent); }
+  .topbar-user button {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-size: 12.5px;
+    cursor: pointer;
+  }
+  .topbar-user button:hover { border-color: var(--accent); }
+  .nav-tabs { display: flex; gap: 6px; max-width: 980px; margin: 14px auto 0; padding: 0 32px; }
+  .nav-tab {
+    background: transparent;
+    border: 1px solid var(--border);
+    border-bottom: none;
+    color: var(--muted);
+    padding: 9px 16px;
+    border-radius: 8px 8px 0 0;
+    font-size: 13px;
+    cursor: pointer;
+  }
+  .nav-tab.active { background: var(--panel); color: var(--text); border-color: var(--border); }
+  .logs-toolbar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 14px; }
+  .logs-toolbar select { width: auto; }
+  .logs-toolbar button {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 9px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .logs-toolbar button:disabled { opacity: 0.5; cursor: not-allowed; }
+  .log-entry {
+    border-bottom: 1px solid var(--border);
+    padding: 8px 0;
+    font-size: 12.5px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  .log-entry .ts { color: var(--accent-2); margin-right: 10px; }
+  .log-entry .stream { color: var(--muted); margin-right: 10px; }
+  .log-entry .msg { color: #c3cde0; white-space: pre-wrap; word-break: break-word; }
+  #logsList { max-height: 60vh; overflow-y: auto; }
+  header {
+    padding: 20px 32px 8px;
+    max-width: 980px;
+    margin: 0 auto;
+  }
+  header h1 { margin: 0 0 4px; font-size: 24px; letter-spacing: -0.02em; }
+  header p { margin: 0; color: var(--muted); font-size: 14px; }
+  main {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 24px 32px 80px;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  @media (min-width: 900px) {
+    main { grid-template-columns: 420px 1fr; align-items: start; }
+  }
+  .hint { font-size: 12px; color: var(--muted); margin-top: 6px; }
+  #results .placeholder { color: var(--muted); font-size: 14px; line-height: 1.6; }
+  .stage {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-bottom: 12px;
+    background: var(--panel-2);
+  }
+  .stage h3 {
+    margin: 0 0 8px;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .pill {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 9px;
+    border-radius: 999px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+  .pill.ok { background: rgba(110,231,183,0.15); color: var(--accent-2); }
+  .pill.bad { background: rgba(255,107,107,0.15); color: var(--danger); }
+  .pill.warn { background: rgba(255,180,84,0.15); color: var(--warn); }
+  .kv { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; font-size: 13.5px; }
+  .kv dt { color: var(--muted); }
+  .kv dd { margin: 0; }
+  details summary { cursor: pointer; font-size: 12px; color: var(--muted); margin-top: 10px; }
+  pre {
+    background: #0a0f1c;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px;
+    font-size: 11.5px;
+    overflow-x: auto;
+    max-height: 320px;
+    color: #c3cde0;
+  }
+  .halt-banner {
+    border: 1px solid rgba(255,107,107,0.4);
+    background: rgba(255,107,107,0.08);
+    border-radius: 10px;
+    padding: 14px 16px;
+    color: var(--danger);
+    font-size: 13.5px;
+    margin-bottom: 12px;
+  }
+</style>
+</head>
+<body>
+
+<!-- ================= HERO ================= -->
+<div id="view-hero" class="view">
+  <div class="hero-bg"><div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div></div>
+  <div class="hero-content">
+    <svg class="logo-mark" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="shieldGrad" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#4f8cff"/>
+          <stop offset="100%" stop-color="#6ee7b7"/>
+        </linearGradient>
+      </defs>
+      <path d="M50 4 L90 18 V46 C90 70 73 88 50 96 C27 88 10 70 10 46 V18 Z" fill="url(#shieldGrad)" opacity="0.18" stroke="url(#shieldGrad)" stroke-width="3"/>
+      <path d="M32 50 L45 63 L70 34" fill="none" stroke="url(#shieldGrad)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <h1>AssetGuardian AI</h1>
+    <p class="tagline">AI-powered enterprise asset inspection — identity verification, vision-based damage detection, fraud checks, and lifecycle decisioning in a single pass.</p>
+    <div class="hero-actions">
+      <button class="btn primary" id="heroSignIn">Sign In</button>
+      <button class="btn secondary" id="heroSignUp">Create NCS Account</button>
+    </div>
+    <div class="hero-features">
+      <div class="feature">🛡️ Identity-verified handovers</div>
+      <div class="feature">📷 Vision-based damage &amp; fraud detection</div>
+      <div class="feature">⚡ Real-time lifecycle decisions</div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= AUTH ================= -->
+<div id="view-auth" class="view" style="display:none;">
+  <div class="auth-card card">
+    <div class="brand-row">
+      <svg class="logo-mark-sm" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <path d="M50 4 L90 18 V46 C90 70 73 88 50 96 C27 88 10 70 10 46 V18 Z" fill="url(#shieldGrad)" opacity="0.25" stroke="url(#shieldGrad)" stroke-width="4"/>
+        <path d="M32 50 L45 63 L70 34" fill="none" stroke="url(#shieldGrad)" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span>AssetGuardian AI</span>
+    </div>
+
+    <div id="authLogin">
+      <h2>Sign In</h2>
+      <p class="hint">Sign in with your NCS email address, or the admin account provided by IT.</p>
+      <label for="loginEmail">Email</label>
+      <input type="email" id="loginEmail" placeholder="you@ncs.com.sg or admin" autocomplete="username" />
+      <label for="loginPassword">Password</label>
+      <input type="password" id="loginPassword" autocomplete="current-password" />
+      <div id="newPasswordBlock" style="display:none;">
+        <label for="newPassword">Your admin password must be reset on first sign-in — choose a new password</label>
+        <input type="password" id="newPassword" autocomplete="new-password" />
+      </div>
+      <button class="full" id="loginBtn">Sign In</button>
+      <div class="form-status" id="loginStatus"></div>
+      <p class="switch">New team member? <a href="#" id="showSignup">Create an NCS account</a></p>
+    </div>
+
+    <div id="authSignup" style="display:none;">
+      <h2>Create Account</h2>
+      <p class="hint">Self-service sign-up is restricted to <strong>@ncs.com.sg</strong> email addresses.</p>
+      <label for="signupEmail">NCS Email</label>
+      <input type="email" id="signupEmail" placeholder="you@ncs.com.sg" autocomplete="username" />
+      <label for="signupPassword">Password</label>
+      <input type="password" id="signupPassword" autocomplete="new-password" />
+      <label for="signupPassword2">Confirm Password</label>
+      <input type="password" id="signupPassword2" autocomplete="new-password" />
+      <button class="full" id="signupBtn">Create Account</button>
+      <div class="form-status" id="signupStatus"></div>
+      <p class="switch">Already have an account? <a href="#" id="showLoginFromSignup">Sign in</a></p>
+    </div>
+
+    <div id="authConfirm" style="display:none;">
+      <h2>Verify Your Email</h2>
+      <p class="hint">Enter the 6-digit code sent to <strong id="confirmEmailLabel"></strong>.</p>
+      <label for="confirmCode">Verification code</label>
+      <input type="text" id="confirmCode" maxlength="6" inputmode="numeric" />
+      <button class="full" id="confirmBtn">Verify &amp; Continue</button>
+      <div class="form-status" id="confirmStatus"></div>
+    </div>
+
+    <p class="switch"><a href="#" id="backToHero">&larr; Back to home</a></p>
+  </div>
+</div>
+
+<!-- ================= APP ================= -->
+<div id="view-app" class="view" style="display:none;">
+  <div class="topbar">
+    <div class="topbar-brand">
+      <svg class="logo-mark-sm" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <path d="M50 4 L90 18 V46 C90 70 73 88 50 96 C27 88 10 70 10 46 V18 Z" fill="url(#shieldGrad)" opacity="0.25" stroke="url(#shieldGrad)" stroke-width="4"/>
+        <path d="M32 50 L45 63 L70 34" fill="none" stroke="url(#shieldGrad)" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      AssetGuardian AI
+    </div>
+    <div class="topbar-user">
+      <span id="userEmailLabel"></span>
+      <span class="pill" id="userRoleBadge"></span>
+      <button id="signOutBtn">Sign out</button>
+    </div>
+  </div>
+
+  <div class="nav-tabs" id="navTabs">
+    <button class="nav-tab active" id="tabInspection">Inspection</button>
+    <button class="nav-tab" id="tabLogs" style="display:none;">Event Logs</button>
+  </div>
+
+  <div id="tabContentInspection">
+  <header>
+    <h1>New Inspection</h1>
+    <p>Enterprise asset inspection — identity verification, damage detection, fraud checks, and lifecycle decisioning in one pass.</p>
+  </header>
+
+  <main>
+    <form class="card" id="inspectionForm">
+      <h2>New Inspection</h2>
+
+      <label for="workflow">Workflow</label>
+      <select id="workflow">
+        <option value="handover">Employee Handover</option>
+        <option value="return">Asset Return</option>
+        <option value="declare">Annual Self-Declaration</option>
+        <option value="inspect" selected>Ad-hoc Inspection</option>
+      </select>
+
+      <div class="row">
+        <div>
+          <label for="assetId">Asset ID</label>
+          <input type="text" id="assetId" placeholder="ASSET-0001" />
+        </div>
+        <div>
+          <label for="serialNumber">Serial Number</label>
+          <input type="text" id="serialNumber" placeholder="PF3K9QRX" />
+        </div>
+      </div>
+
+      <div class="row">
+        <div>
+          <label for="employeeId">Employee ID</label>
+          <input type="text" id="employeeId" placeholder="EMP1001 or you@ncs.com.sg" />
+          <p class="field-error" id="employeeIdError"></p>
+        </div>
+        <div>
+          <label for="deviceType">Device Type</label>
+          <select id="deviceType">
+            <option value="laptop">Laptop</option>
+            <option value="monitor">Monitor</option>
+            <option value="phone">Phone</option>
+            <option value="tablet">Tablet</option>
+          </select>
+        </div>
+      </div>
+
+      <label for="devicePhotos">Device photos (front / rear / side / close-ups — select multiple)</label>
+      <input type="file" id="devicePhotos" accept="image/*" multiple required />
+
+      <label for="labelPhoto">Asset tag / label photo (optional — improves identity match)</label>
+      <input type="file" id="labelPhoto" accept="image/*" />
+
+      <div class="checkbox-row">
+        <input type="checkbox" id="checkDisplay" />
+        <label for="checkDisplay" style="margin:0;">Include display health check</label>
+      </div>
+      <div id="displayFields" style="display:none;">
+        <label for="whiteScreen">White screen test photo</label>
+        <input type="file" id="whiteScreen" accept="image/*" />
+        <label for="blackScreen">Black screen test photo</label>
+        <input type="file" id="blackScreen" accept="image/*" />
+      </div>
+
+      <div id="declareFields" style="display:none;">
+        <div class="checkbox-row">
+          <input type="checkbox" id="attestationConfirmed" />
+          <label for="attestationConfirmed" style="margin:0;">Employee attests device condition is accurately represented</label>
+        </div>
+      </div>
+
+      <button class="full" id="submit" type="submit">Run Inspection</button>
+      <div class="form-status" id="status"></div>
+      <p class="hint">Photos upload directly to S3 under your signed-in identity, then the inspection pipeline runs server-side.</p>
+    </form>
+
+    <section class="card" id="results">
+      <h2>Results</h2>
+      <div class="placeholder">Submit an inspection to see identity verification, damage detection, fraud risk, and the lifecycle decision here.</div>
+    </section>
+  </main>
+  </div>
+
+  <div id="tabContentLogs" style="display:none;">
+    <header>
+      <h1>Event Logs</h1>
+      <p>Live CloudWatch Logs — admin-only, read directly from your signed-in browser session via IAM (no separate backend query API).</p>
+    </header>
+    <main style="display:block; max-width: 980px;">
+      <section class="card">
+        <div class="logs-toolbar">
+          <div>
+            <label for="logGroupSelect" style="margin:0 0 4px;">Log group</label>
+            <select id="logGroupSelect">
+              <option value="harness">/assetguardian/harness-invoke</option>
+              <option value="audit">/assetguardian/policy-audit</option>
+            </select>
+          </div>
+          <div>
+            <label for="logRangeSelect" style="margin:0 0 4px;">Time range</label>
+            <select id="logRangeSelect">
+              <option value="3600000">Last 1 hour</option>
+              <option value="86400000" selected>Last 24 hours</option>
+              <option value="604800000">Last 7 days</option>
+            </select>
+          </div>
+          <button id="refreshLogsBtn">Refresh</button>
+        </div>
+        <div class="form-status" id="logsStatus"></div>
+        <div id="logsList"></div>
+      </section>
+    </main>
+  </div>
+</div>
+
+<script>
+const CONFIG = {
+  region: "ap-southeast-1",
+  identityPoolId: "ap-southeast-1:49b648af-ece5-495c-b4e6-19e3b78410cb",
+  apiBase: "https://rwgheig8j7.execute-api.ap-southeast-1.amazonaws.com",
+  photosBucket: "assetguardian-asset-photos-418748712186-ap-southeast-1",
+  userPoolId: "ap-southeast-1_KDojmmieE",
+  userPoolClientId: "k4gl5k5fb6mb597rcqom5g709",
+  // Employee ID accepts a staff ID or a corporate email; anything else on this
+  // field is rejected here and again server-side in agents/sanitize.py.
+  corporateEmailDomain: "@ncs.com.sg",
+  logGroups: {
+    harness: "/assetguardian/harness-invoke",
+    audit: "/assetguardian/policy-audit",
+  },
+};
+
+// ---------- SigV4 (vanilla, no external dependencies) ----------
+
+async function sha256Hex(data) {
+  const buf = typeof data === "string" ? new TextEncoder().encode(data) : data;
+  const hash = await crypto.subtle.digest("SHA-256", buf);
+  return [...new Uint8Array(hash)].map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+async function hmac(key, data) {
+  const cryptoKey = await crypto.subtle.importKey("raw", key, { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+  const sig = await crypto.subtle.sign("HMAC", cryptoKey, typeof data === "string" ? new TextEncoder().encode(data) : data);
+  return new Uint8Array(sig);
+}
+
+async function hmacHex(key, data) {
+  return [...(await hmac(key, data))].map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+async function getSigningKey(secretKey, dateStamp, region, service) {
+  const kDate = await hmac(new TextEncoder().encode("AWS4" + secretKey), dateStamp);
+  const kRegion = await hmac(kDate, region);
+  const kService = await hmac(kRegion, service);
+  return hmac(kService, "aws4_request");
+}
+
+async function sigv4Headers({ method, url, region, service, credentials, body, extraHeaders, unsignedPayload }) {
+  const u = new URL(url);
+  const amzDate = new Date().toISOString().replace(/[:-]|\.\d{3}/g, "");
+  const dateStamp = amzDate.slice(0, 8);
+  const payloadHash = unsignedPayload ? "UNSIGNED-PAYLOAD" : await sha256Hex(body || "");
+
+  const headers = {};
+  for (const [k, v] of Object.entries(extraHeaders || {})) headers[k.toLowerCase()] = v;
+  headers["host"] = u.host;
+  headers["x-amz-date"] = amzDate;
+  headers["x-amz-content-sha256"] = payloadHash;
+  if (credentials.sessionToken) headers["x-amz-security-token"] = credentials.sessionToken;
+
+  const sortedKeys = Object.keys(headers).sort();
+  const canonicalHeaders = sortedKeys.map((k) => `${k}:${String(headers[k]).trim()}\n`).join("");
+  const signedHeaders = sortedKeys.join(";");
+  const canonicalUri = u.pathname.split("/").map(encodeURIComponent).join("/") || "/";
+  const canonicalRequest = [method, canonicalUri, "", canonicalHeaders, signedHeaders, payloadHash].join("\n");
+
+  const credentialScope = `${dateStamp}/${region}/${service}/aws4_request`;
+  const stringToSign = ["AWS4-HMAC-SHA256", amzDate, credentialScope, await sha256Hex(canonicalRequest)].join("\n");
+
+  const signingKey = await getSigningKey(credentials.secretAccessKey, dateStamp, region, service);
+  const signature = await hmacHex(signingKey, stringToSign);
+
+  headers["authorization"] =
+    `AWS4-HMAC-SHA256 Credential=${credentials.accessKeyId}/${credentialScope}, ` +
+    `SignedHeaders=${signedHeaders}, Signature=${signature}`;
+  return headers;
+}
+
+// ---------- Cognito IdP (login / signup) — direct low-level API, no SDK ----------
+
+async function cognitoIdp(target, body) {
+  const endpoint = `https://cognito-idp.${CONFIG.region}.amazonaws.com/`;
+  const resp = await fetch(endpoint, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-amz-json-1.1",
+      "X-Amz-Target": `AWSCognitoIdentityProviderService.${target}`,
+    },
+    body: JSON.stringify(body),
+  });
+  const data = await resp.json();
+  if (!resp.ok) {
+    const err = new Error(data.message || data.__type || "Cognito request failed");
+    err.type = data.__type;
+    throw err;
+  }
+  return data;
+}
+
+function decodeJwt(token) {
+  const payload = token.split(".")[1];
+  const b64 = payload.replace(/-/g, "+").replace(/_/g, "/");
+  const json = decodeURIComponent(
+    atob(b64)
+      .split("")
+      .map((c) => "%" + c.charCodeAt(0).toString(16).padStart(2, "0"))
+      .join("")
+  );
+  return JSON.parse(json);
+}
+
+// ---------- Session (persisted in sessionStorage so a page refresh doesn't force re-login) ----------
+
+let session = null; // { idToken, accessToken, refreshToken, expiresAt, email, isAdmin }
+
+function saveSession() {
+  if (session) sessionStorage.setItem("ag_session", JSON.stringify(session));
+  else sessionStorage.removeItem("ag_session");
+}
+
+function loadSession() {
+  try {
+    const raw = sessionStorage.getItem("ag_session");
+    if (!raw) return null;
+    const s = JSON.parse(raw);
+    if (!s.refreshToken) return null;
+    return s;
+  } catch {
+    return null;
+  }
+}
+
+async function refreshSessionTokens() {
+  if (!session || !session.refreshToken) throw new Error("No refresh token available");
+  const resp = await cognitoIdp("InitiateAuth", {
+    AuthFlow: "REFRESH_TOKEN_AUTH",
+    ClientId: CONFIG.userPoolClientId,
+    AuthParameters: { REFRESH_TOKEN: session.refreshToken },
+  });
+  const r = resp.AuthenticationResult;
+  const claims = decodeJwt(r.IdToken);
+  session = {
+    idToken: r.IdToken,
+    accessToken: r.AccessToken,
+    refreshToken: session.refreshToken,
+    expiresAt: Date.now() + (r.ExpiresIn || 3600) * 1000,
+    email: claims.email,
+    isAdmin: isAdminFromClaims(claims),
+  };
+  saveSession();
+}
+
+// Real admin signal: membership in the Cognito "Admins" User Pool Group,
+// which is also what the Identity Pool's role-mapping rule checks server-side
+// to grant the elevated AdminRole. This is authorization, not a UI opinion.
+function isAdminFromClaims(claims) {
+  const groups = claims["cognito:groups"] || [];
+  return Array.isArray(groups) && groups.includes("Admins");
+}
+
+// ---------- AWS credentials for the signed-in identity ----------
+
+let cachedCredentials = null;
+
+async function getCredentials() {
+  if (!session) throw new Error("Not signed in.");
+  if (session.expiresAt - Date.now() < 4 * 60 * 1000) {
+    await refreshSessionTokens();
+    cachedCredentials = null;
+  }
+  if (cachedCredentials && new Date(cachedCredentials.expiration).getTime() - Date.now() > 60000) {
+    return cachedCredentials;
+  }
+  const endpoint = `https://cognito-identity.${CONFIG.region}.amazonaws.com/`;
+  const logins = { [`cognito-idp.${CONFIG.region}.amazonaws.com/${CONFIG.userPoolId}`]: session.idToken };
+
+  const idResp = await fetch(endpoint, {
+    method: "POST",
+    headers: { "Content-Type": "application/x-amz-json-1.1", "X-Amz-Target": "AWSCognitoIdentityService.GetId" },
+    body: JSON.stringify({ IdentityPoolId: CONFIG.identityPoolId, Logins: logins }),
+  });
+  const idData = await idResp.json();
+  if (!idResp.ok) throw new Error(idData.message || idData.__type || "Failed to obtain identity");
+
+  const credResp = await fetch(endpoint, {
+    method: "POST",
+    headers: { "Content-Type": "application/x-amz-json-1.1", "X-Amz-Target": "AWSCognitoIdentityService.GetCredentialsForIdentity" },
+    body: JSON.stringify({ IdentityId: idData.IdentityId, Logins: logins }),
+  });
+  const credData = await credResp.json();
+  if (!credResp.ok) throw new Error(credData.message || credData.__type || "Failed to obtain credentials");
+
+  const c = credData.Credentials;
+  cachedCredentials = {
+    accessKeyId: c.AccessKeyId,
+    secretAccessKey: c.SecretKey,
+    sessionToken: c.SessionToken,
+    expiration: c.Expiration,
+  };
+  return cachedCredentials;
+}
+
+// ---------- S3 upload + API invoke ----------
+
+function sanitizeFilename(name) {
+  return name.replace(/[^a-zA-Z0-9._-]/g, "_");
+}
+
+async function uploadToS3(file, sessionId) {
+  const credentials = await getCredentials();
+  const key = `uploads/${sessionId}/${Date.now()}-${sanitizeFilename(file.name)}`;
+  const url = `https://${CONFIG.photosBucket}.s3.${CONFIG.region}.amazonaws.com/${key}`;
+  const headers = await sigv4Headers({
+    method: "PUT",
+    url,
+    region: CONFIG.region,
+    service: "s3",
+    credentials,
+    unsignedPayload: true,
+    extraHeaders: { "content-type": file.type || "application/octet-stream" },
+  });
+  const resp = await fetch(url, { method: "PUT", headers, body: file });
+  if (!resp.ok) throw new Error(`Upload failed for ${file.name}: HTTP ${resp.status}`);
+  return key;
+}
+
+async function invokeWorkflow(route, payload) {
+  const credentials = await getCredentials();
+  const url = `${CONFIG.apiBase}${route}`;
+  const body = JSON.stringify(payload);
+  const headers = await sigv4Headers({
+    method: "POST",
+    url,
+    region: CONFIG.region,
+    service: "execute-api",
+    credentials,
+    body,
+    extraHeaders: { "content-type": "application/json" },
+  });
+  const resp = await fetch(url, { method: "POST", headers, body });
+  const data = await resp.json();
+  return { httpStatus: resp.status, data };
+}
+
+// ---------- View switching ----------
+
+const $ = (id) => document.getElementById(id);
+
+function showView(name) {
+  ["hero", "auth", "app"].forEach((v) => {
+    $(`view-${v}`).style.display = v === name ? (v === "auth" ? "flex" : "block") : "none";
+  });
+}
+
+function showAuthPanel(name) {
+  ["authLogin", "authSignup", "authConfirm"].forEach((id) => {
+    $(id).style.display = id === name ? "block" : "none";
+  });
+}
+
+function setFormStatus(el, msg, kind) {
+  el.textContent = msg;
+  el.className = "form-status" + (kind ? " " + kind : "");
+}
+
+function enterApp() {
+  $("userEmailLabel").textContent = session.email || "";
+  const badge = $("userRoleBadge");
+  badge.textContent = session.isAdmin ? "Admin" : "Employee";
+  badge.className = "pill " + (session.isAdmin ? "admin" : "employee");
+  $("tabLogs").style.display = session.isAdmin ? "inline-block" : "none";
+  showTab("inspection");
+  showView("app");
+}
+
+// ---------- App tabs (Inspection / Event Logs) ----------
+
+function showTab(name) {
+  const isLogs = name === "logs";
+  $("tabContentInspection").style.display = isLogs ? "none" : "block";
+  $("tabContentLogs").style.display = isLogs ? "block" : "none";
+  $("tabInspection").className = "nav-tab" + (isLogs ? "" : " active");
+  $("tabLogs").className = "nav-tab" + (isLogs ? " active" : "");
+  if (isLogs && !logsLoadedOnce) {
+    logsLoadedOnce = true;
+    loadLogs();
+  }
+}
+
+$("tabInspection").addEventListener("click", () => showTab("inspection"));
+$("tabLogs").addEventListener("click", () => showTab("logs"));
+$("refreshLogsBtn").addEventListener("click", () => loadLogs());
+$("logGroupSelect").addEventListener("change", () => loadLogs());
+$("logRangeSelect").addEventListener("change", () => loadLogs());
+
+let logsLoadedOnce = false;
+
+async function callCloudWatchLogs(action, body) {
+  const credentials = await getCredentials();
+  const url = `https://logs.${CONFIG.region}.amazonaws.com/`;
+  const bodyStr = JSON.stringify(body);
+  const headers = await sigv4Headers({
+    method: "POST",
+    url,
+    region: CONFIG.region,
+    service: "logs",
+    credentials,
+    body: bodyStr,
+    extraHeaders: {
+      "content-type": "application/x-amz-json-1.1",
+      "x-amz-target": `Logs_20140328.${action}`,
+    },
+  });
+  const resp = await fetch(url, { method: "POST", headers, body: bodyStr });
+  const data = await resp.json();
+  if (!resp.ok) throw new Error(data.message || data.__type || `CloudWatch Logs ${action} failed`);
+  return data;
+}
+
+function formatLogTs(ms) {
+  return new Date(ms).toISOString().replace("T", " ").replace("Z", " UTC");
+}
+
+async function loadLogs() {
+  const btn = $("refreshLogsBtn");
+  const statusEl = $("logsStatus");
+  const listEl = $("logsList");
+  btn.disabled = true;
+  setFormStatus(statusEl, "Loading…");
+  try {
+    const groupKey = $("logGroupSelect").value;
+    const logGroupName = CONFIG.logGroups[groupKey];
+    const windowMs = parseInt($("logRangeSelect").value, 10);
+    const startTime = Date.now() - windowMs;
+
+    const data = await callCloudWatchLogs("FilterLogEvents", {
+      logGroupName,
+      startTime,
+      limit: 200,
+      interleaved: true,
+    });
+
+    const events = data.events || [];
+    if (events.length === 0) {
+      listEl.innerHTML = `<div class="placeholder">No events in ${logGroupName} for the selected time range.</div>`;
+    } else {
+      listEl.innerHTML = events
+        .slice()
+        .reverse()
+        .map(
+          (e) =>
+            `<div class="log-entry"><span class="ts">${formatLogTs(e.timestamp)}</span><span class="stream">${(e.logStreamName || "").slice(-24)}</span><div class="msg">${(e.message || "").replace(/</g, "&lt;")}</div></div>`
+        )
+        .join("");
+    }
+    setFormStatus(statusEl, `${events.length} event(s).`, "ok");
+  } catch (err) {
+    console.error(err);
+    setFormStatus(statusEl, err.message || String(err), "error");
+    listEl.innerHTML = `<div class="placeholder">Failed to load logs — see status message above. (Non-admin accounts don't have permission to read these log groups.)</div>`;
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+// Hero → auth
+$("heroSignIn").addEventListener("click", () => { showView("auth"); showAuthPanel("authLogin"); });
+$("heroSignUp").addEventListener("click", () => { showView("auth"); showAuthPanel("authSignup"); });
+$("backToHero").addEventListener("click", (e) => { e.preventDefault(); showView("hero"); });
+$("showSignup").addEventListener("click", (e) => { e.preventDefault(); showAuthPanel("authSignup"); });
+$("showLoginFromSignup").addEventListener("click", (e) => { e.preventDefault(); showAuthPanel("authLogin"); });
+
+// ---------- Login ----------
+
+let pendingChallenge = null; // { session, username }
+
+$("loginBtn").addEventListener("click", async () => {
+  const btn = $("loginBtn");
+  const email = $("loginEmail").value.trim();
+  const password = $("loginPassword").value;
+  const statusEl = $("loginStatus");
+
+  if (!email || !password) { setFormStatus(statusEl, "Enter your email and password.", "error"); return; }
+
+  btn.disabled = true;
+  setFormStatus(statusEl, "Signing in…");
+  try {
+    if (pendingChallenge && $("newPasswordBlock").style.display !== "none") {
+      const newPassword = $("newPassword").value;
+      if (!newPassword) throw new Error("Enter a new password.");
+      const resp = await cognitoIdp("RespondToAuthChallenge", {
+        ClientId: CONFIG.userPoolClientId,
+        ChallengeName: "NEW_PASSWORD_REQUIRED",
+        Session: pendingChallenge.session,
+        ChallengeResponses: { USERNAME: pendingChallenge.username, NEW_PASSWORD: newPassword },
+      });
+      await completeLogin(resp.AuthenticationResult);
+      return;
+    }
+
+    const resp = await cognitoIdp("InitiateAuth", {
+      AuthFlow: "USER_PASSWORD_AUTH",
+      ClientId: CONFIG.userPoolClientId,
+      AuthParameters: { USERNAME: email, PASSWORD: password },
+    });
+
+    if (resp.ChallengeName === "NEW_PASSWORD_REQUIRED") {
+      pendingChallenge = { session: resp.Session, username: email };
+      $("newPasswordBlock").style.display = "block";
+      setFormStatus(statusEl, "Enter a new password to continue.");
+      btn.disabled = false;
+      return;
+    }
+
+    await completeLogin(resp.AuthenticationResult);
+  } catch (err) {
+    console.error(err);
+    setFormStatus(statusEl, err.message || String(err), "error");
+    btn.disabled = false;
+  }
+});
+
+async function completeLogin(authResult) {
+  const claims = decodeJwt(authResult.IdToken);
+  session = {
+    idToken: authResult.IdToken,
+    accessToken: authResult.AccessToken,
+    refreshToken: authResult.RefreshToken,
+    expiresAt: Date.now() + (authResult.ExpiresIn || 3600) * 1000,
+    email: claims.email,
+    isAdmin: isAdminFromClaims(claims),
+  };
+  saveSession();
+  pendingChallenge = null;
+  $("loginBtn").disabled = false;
+  $("newPasswordBlock").style.display = "none";
+  $("loginPassword").value = "";
+  $("newPassword").value = "";
+  setFormStatus($("loginStatus"), "");
+  enterApp();
+}
+
+// ---------- Signup ----------
+
+let pendingSignupEmail = null;
+
+$("signupBtn").addEventListener("click", async () => {
+  const btn = $("signupBtn");
+  const email = $("signupEmail").value.trim();
+  const password = $("signupPassword").value;
+  const password2 = $("signupPassword2").value;
+  const statusEl = $("signupStatus");
+
+  if (!email.toLowerCase().endsWith("@ncs.com.sg")) {
+    setFormStatus(statusEl, "Self-service sign-up requires an @ncs.com.sg email address.", "error");
+    return;
+  }
+  if (password.length < 10) { setFormStatus(statusEl, "Password must be at least 10 characters.", "error"); return; }
+  if (password !== password2) { setFormStatus(statusEl, "Passwords do not match.", "error"); return; }
+
+  btn.disabled = true;
+  setFormStatus(statusEl, "Creating your account…");
+  try {
+    await cognitoIdp("SignUp", {
+      ClientId: CONFIG.userPoolClientId,
+      Username: email,
+      Password: password,
+      UserAttributes: [{ Name: "email", Value: email }],
+    });
+    pendingSignupEmail = email;
+    $("confirmEmailLabel").textContent = email;
+    showAuthPanel("authConfirm");
+  } catch (err) {
+    console.error(err);
+    setFormStatus(statusEl, err.message || String(err), "error");
+  } finally {
+    btn.disabled = false;
+  }
+});
+
+$("confirmBtn").addEventListener("click", async () => {
+  const btn = $("confirmBtn");
+  const code = $("confirmCode").value.trim();
+  const statusEl = $("confirmStatus");
+  if (!code) { setFormStatus(statusEl, "Enter the verification code.", "error"); return; }
+
+  btn.disabled = true;
+  setFormStatus(statusEl, "Verifying…");
+  try {
+    await cognitoIdp("ConfirmSignUp", {
+      ClientId: CONFIG.userPoolClientId,
+      Username: pendingSignupEmail,
+      ConfirmationCode: code,
+    });
+    setFormStatus(statusEl, "Verified! You can now sign in.", "ok");
+    $("loginEmail").value = pendingSignupEmail;
+    setTimeout(() => showAuthPanel("authLogin"), 900);
+  } catch (err) {
+    console.error(err);
+    setFormStatus(statusEl, err.message || String(err), "error");
+  } finally {
+    btn.disabled = false;
+  }
+});
+
+// ---------- Sign out ----------
+
+$("signOutBtn").addEventListener("click", () => {
+  session = null;
+  cachedCredentials = null;
+  saveSession();
+  showView("hero");
+});
+
+// ---------- Inspection form (unchanged pipeline logic) ----------
+
+$("checkDisplay").addEventListener("change", (e) => {
+  $("displayFields").style.display = e.target.checked ? "block" : "none";
+});
+$("workflow").addEventListener("change", (e) => {
+  $("declareFields").style.display = e.target.value === "declare" ? "block" : "none";
+});
+
+function pill(text, kind) {
+  return `<span class="pill ${kind}">${text}</span>`;
+}
+
+function renderResults(workflow, data) {
+  const el = $("results");
+  const stages = data.stages || {};
+  let html = `<h2>Results</h2>`;
+  html += `<div class="kv" style="margin-bottom:14px;">
+    <dt>Workflow</dt><dd>${data.workflow || workflow}</dd>
+    <dt>SLA</dt><dd>${data.sla_hours ?? "—"}h</dd>
+    <dt>Pipeline time</dt><dd>${data.pipeline_elapsed_seconds ?? "—"}s</dd>
+  </div>`;
+
+  if (data.error === "pipeline_halted") {
+    html += `<div class="halt-banner"><strong>Pipeline halted at ${data.stage}.</strong><br>${JSON.stringify(data.detail)}</div>`;
+    el.innerHTML = html;
+    return;
+  }
+  if (data.error) {
+    html += `<div class="halt-banner"><strong>${data.error}</strong><br>${data.detail || ""}</div>`;
+    el.innerHTML = html;
+    return;
+  }
+
+  const iv = stages.identity_verification;
+  if (iv) {
+    html += `<div class="stage"><h3>Identity Verification ${pill(iv.verified ? "Verified" : "Not Verified", iv.verified ? "ok" : "bad")}</h3>
+      <div class="kv">
+        <dt>CMDB status</dt><dd>${iv.cmdb_status ?? "—"}</dd>
+        <dt>Serial match</dt><dd>${iv.serial_match ?? "—"}</dd>
+        <dt>Ownership match</dt><dd>${iv.ownership_match ?? "—"}</dd>
+        <dt>Device</dt><dd>${iv.cmdb_record?.deviceModel ?? "—"}</dd>
+      </div></div>`;
+  }
+
+  const vq = stages.vision_quality_gate;
+  if (vq) {
+    html += `<div class="stage"><h3>Vision Quality Gate ${pill(vq.passed ? "Passed" : "Failed", vq.passed ? "ok" : "bad")}</h3>
+      <div class="kv">
+        <dt>Overall score</dt><dd>${vq.overall_score ?? "—"} / 100</dd>
+        <dt>Sharpness</dt><dd>${vq.sharpness_score ?? "—"}</dd>
+        <dt>Lighting</dt><dd>${vq.lighting_score ?? "—"}</dd>
+      </div></div>`;
+  }
+
+  const dd = stages.damage_detection;
+  if (dd) {
+    html += `<div class="stage"><h3>Damage Detection ${pill(dd.severity_category ?? "—", dd.severity_category === "None" || dd.severity_category === "Minor" ? "ok" : dd.severity_category === "Moderate" ? "warn" : "bad")}</h3>
+      <div class="kv">
+        <dt>Severity score</dt><dd>${dd.damage_severity_score ?? "—"} / 100</dd>
+        <dt>Condition grade</dt><dd>${dd.condition_grade ?? "—"}</dd>
+        <dt>Findings</dt><dd>${(dd.detected_damage || []).map((d) => d.type).join(", ") || "none"}</dd>
+      </div></div>`;
+  }
+
+  const dh = stages.display_health;
+  if (dh && !dh.skipped) {
+    html += `<div class="stage"><h3>Display Health ${pill(dh.health_classification ?? "—", dh.health_classification === "Good" ? "ok" : dh.health_classification === "Fair" ? "warn" : "bad")}</h3>
+      <div class="kv">
+        <dt>Score</dt><dd>${dh.display_health_score ?? "—"} / 100</dd>
+        <dt>Dead pixels</dt><dd>${dh.dead_pixel_estimate ?? "—"}</dd>
+        <dt>Backlight bleed</dt><dd>${dh.backlight_bleed_severity ?? "—"}</dd>
+      </div></div>`;
+  }
+
+  const fd = stages.fraud_detection;
+  if (fd) {
+    html += `<div class="stage"><h3>Fraud Detection ${pill(fd.risk_level ?? "—", fd.risk_level === "Low" ? "ok" : fd.risk_level === "Medium" ? "warn" : "bad")}</h3>
+      <div class="kv">
+        <dt>Legitimacy confidence</dt><dd>${fd.legitimacy_confidence ?? "—"}</dd>
+        <dt>Failed checks</dt><dd>${fd.failed_check_count ?? "—"}</dd>
+      </div></div>`;
+  }
+
+  const lc = stages.lifecycle_decision;
+  if (lc) {
+    html += `<div class="stage"><h3>Lifecycle Decision ${pill(lc.decision ?? "—", lc.decision === "Continue Use" ? "ok" : lc.decision === "Dispose" ? "bad" : "warn")}</h3>
+      <div class="kv">
+        <dt>Reason</dt><dd>${lc.reason ?? "—"}</dd>
+        <dt>Estimated cost</dt><dd>$${lc.estimated_cost_usd ?? "—"}</dd>
+        <dt>Dual approval required</dt><dd>${lc.requires_dual_approval ?? "—"}</dd>
+      </div></div>`;
+  }
+
+  html += `<details><summary>Raw JSON response</summary><pre>${JSON.stringify(data, null, 2)}</pre></details>`;
+  el.innerHTML = html;
+}
+
+// ---------- Employee ID validation ----------
+// The field takes either a staff ID (EMP1001) or a corporate email. An address
+// on any other domain is almost always a personal account typed by mistake, so
+// it's flagged here rather than sent and rejected later.
+function validateEmployeeId(showError = true) {
+  const input = $("employeeId");
+  const errorEl = $("employeeIdError");
+  const value = input.value.trim();
+  const domain = CONFIG.corporateEmailDomain;
+  let message = "";
+
+  if (value.includes("@")) {
+    if (!value.toLowerCase().endsWith(domain)) {
+      const entered = value.slice(value.lastIndexOf("@"));
+      message = `Use your ${domain} address — ${entered} is not a corporate domain.`;
+    } else if (!/^[A-Za-z0-9._-]+@[A-Za-z0-9.-]+$/.test(value)) {
+      message = "That doesn't look like a valid email address.";
+    }
+  } else if (value && !/^[A-Za-z0-9._-]+$/.test(value)) {
+    message = "Staff IDs can contain letters, digits, dot, hyphen and underscore only.";
+  }
+
+  const valid = message === "";
+  input.classList.toggle("invalid", !valid && showError);
+  errorEl.textContent = message;
+  errorEl.classList.toggle("show", !valid && showError);
+  return valid;
+}
+
+$("employeeId").addEventListener("blur", () => validateEmployeeId(true));
+$("employeeId").addEventListener("input", () => {
+  // Clear the highlight as soon as it's corrected; don't nag mid-typing.
+  if ($("employeeId").classList.contains("invalid")) validateEmployeeId(true);
+});
+
+$("inspectionForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  if (!validateEmployeeId(true)) {
+    $("employeeId").focus();
+    setFormStatus($("status"), "Fix the highlighted Employee ID before submitting.", "error");
+    return;
+  }
+
+  const submitBtn = $("submit");
+  submitBtn.disabled = true;
+  setFormStatus($("status"), "Preparing session…");
+
+  try {
+    const sessionId = crypto.randomUUID();
+    const workflow = $("workflow").value;
+    const route = { handover: "/handover", return: "/return", declare: "/declare", inspect: "/inspect" }[workflow];
+
+    setFormStatus($("status"), "Uploading photos…");
+    const deviceFiles = Array.from($("devicePhotos").files);
+    if (deviceFiles.length === 0) throw new Error("Select at least one device photo.");
+    const imageKeys = [];
+    for (const f of deviceFiles) imageKeys.push(await uploadToS3(f, sessionId));
+
+    let labelKey = null;
+    if ($("labelPhoto").files[0]) labelKey = await uploadToS3($("labelPhoto").files[0], sessionId);
+
+    let whiteKey = null, blackKey = null;
+    const checkDisplay = $("checkDisplay").checked;
+    if (checkDisplay) {
+      if ($("whiteScreen").files[0]) whiteKey = await uploadToS3($("whiteScreen").files[0], sessionId);
+      if ($("blackScreen").files[0]) blackKey = await uploadToS3($("blackScreen").files[0], sessionId);
+    }
+
+    setFormStatus($("status"), "Running inspection pipeline…");
+    const payload = {
+      asset_id: $("assetId").value || null,
+      serial_number: $("serialNumber").value || null,
+      employee_id: $("employeeId").value || null,
+      session_id: sessionId,
+      device_type: $("deviceType").value,
+      image_keys: imageKeys,
+      label_image_key: labelKey,
+      check_display_health: checkDisplay,
+      white_screen_key: whiteKey,
+      black_screen_key: blackKey,
+      attestation_confirmed: $("attestationConfirmed") ? $("attestationConfirmed").checked : false,
+    };
+
+    const { httpStatus, data } = await invokeWorkflow(route, payload);
+    setFormStatus($("status"), `Done (HTTP ${httpStatus}).`);
+    renderResults(workflow, data);
+  } catch (err) {
+    console.error(err);
+    setFormStatus($("status"), err.message || String(err), "error");
+  } finally {
+    submitBtn.disabled = false;
+  }
+});
+
+// ---------- Boot ----------
+
+(function boot() {
+  const restored = loadSession();
+  if (restored && restored.expiresAt > Date.now() + 30000) {
+    session = restored;
+    enterApp();
+  } else if (restored && restored.refreshToken) {
+    session = restored;
+    refreshSessionTokens().then(enterApp).catch(() => { session = null; saveSession(); showView("hero"); });
+  } else {
+    showView("hero");
+  }
+})();
+</script>
+
+</body>
+</html>

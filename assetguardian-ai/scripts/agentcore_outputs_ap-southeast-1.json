@@ -1,0 +1,13 @@
+{
+  "memory_id": "assetguardian_enterprise_memory-hSMythGi1Z",
+  "memory_arn": "arn:aws:bedrock-agentcore:ap-southeast-1:418748712186:memory/assetguardian_enterprise_memory-hSMythGi1Z",
+  "policy_engine_id": "assetguardian_policy_engine-767vqraeto",
+  "policy_engine_arn": "arn:aws:bedrock-agentcore:ap-southeast-1:418748712186:policy-engine/assetguardian_policy_engine-767vqraeto",
+  "gateway_id": "assetguardian-enterprise-gateway-kxh7qe0ilc",
+  "gateway_arn": "arn:aws:bedrock-agentcore:ap-southeast-1:418748712186:gateway/assetguardian-enterprise-gateway-kxh7qe0ilc",
+  "gateway_url": "https://assetguardian-enterprise-gateway-kxh7qe0ilc.gateway.bedrock-agentcore.ap-southeast-1.amazonaws.com/mcp",
+  "gateway_target_id": "ODHA9DHQEN",
+  "harness_id": "assetguardian_harness-MF7yRoCxzf",
+  "harness_arn": "arn:aws:bedrock-agentcore:ap-southeast-1:418748712186:harness/assetguardian_harness-MF7yRoCxzf",
+  "evaluator_arns": []
+}

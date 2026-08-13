@@ -1,0 +1,914 @@
+{
+  "/AssetGuardianAiStack-ap-southeast-1": [
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...jsii runtime, node internals...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/AssetGuardianAiStack-ap-southeast-1/AccessLogsBucket": [
+    {
+      "type": "aws:cdk:acknowledged-rules",
+      "data": {
+        "CloudFormation-Validate::W3045": "accessControl is deprecated, but we are still using it for historical reasons."
+      },
+      "trace": [
+        "    ...aws-cdk-lib, jsii runtime...",
+        "    (no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/AssetGuardianAiStack-ap-southeast-1/AssetCmdbTable": [
+    {
+      "type": "aws:cdk:hasPhysicalName",
+      "data": {
+        "Ref": "AssetCmdbTableAD37F34F"
+      }
+    }
+  ],
+  "/AssetGuardianAiStack-ap-southeast-1/PortalIdentityPool": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "PortalIdentityPool"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...jsii runtime, node internals...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/AssetGuardianAiStack-ap-southeast-1/AdminsGroup": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "AdminsGroup"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...jsii runtime, node internals...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/AssetGuardianAiStack-ap-southeast-1/AWSCDKCfnUtilsProviderCustomResourceProvider": [
+    {
+      "type": "aws:cdk:is-custom-resource-handler-customResourceProvider",
+      "data": true
+    }
+  ],
+  "/AssetGuardianAiStack-ap-southeast-1/IdentityPoolRoleAttachment": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "IdentityPoolRoleAttachment"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...jsii runtime, node internals...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/AssetGuardianAiStack-ap-southeast-1/Custom::CDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756C": [
+    {
+      "type": "aws:cdk:is-custom-resource-handler-singleton",
+      "data": true
+    },
+    {
+      "type": "aws:cdk:is-custom-resource-handler-runtime-family",
+      "data": 2
+    }
+  ],
+  "/AssetGuardianAiStack-ap-southeast-1/PortalUrl": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "PortalUrl"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...jsii runtime, node internals...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/AssetGuardianAiStack-ap-southeast-1/KmsKeyArn": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "KmsKeyArn"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...jsii runtime, node internals...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/AssetGuardianAiStack-ap-southeast-1/PhotosBucketName": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "PhotosBucketName"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...jsii runtime, node internals...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/AssetGuardianAiStack-ap-southeast-1/CmdbTableName": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CmdbTableName"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...jsii runtime, node internals...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/AssetGuardianAiStack-ap-southeast-1/HarnessFunctionName": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "HarnessFunctionName"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...jsii runtime, node internals...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/AssetGuardianAiStack-ap-southeast-1/HarnessFunctionArn": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "HarnessFunctionArn"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...jsii runtime, node internals...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/AssetGuardianAiStack-ap-southeast-1/HarnessRoleArn": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "HarnessRoleArn"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...jsii runtime, node internals...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/AssetGuardianAiStack-ap-southeast-1/ApiEndpoint": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ApiEndpoint"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...jsii runtime, node internals...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/AssetGuardianAiStack-ap-southeast-1/ApiId": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ApiId"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...jsii runtime, node internals...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/AssetGuardianAiStack-ap-southeast-1/IdentityPoolId": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "IdentityPoolId"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...jsii runtime, node internals...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/AssetGuardianAiStack-ap-southeast-1/CloudFrontDomainName": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CloudFrontDomainName"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...jsii runtime, node internals...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/AssetGuardianAiStack-ap-southeast-1/UserPoolId": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "UserPoolId"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...jsii runtime, node internals...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/AssetGuardianAiStack-ap-southeast-1/UserPoolClientId": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "UserPoolClientId"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...jsii runtime, node internals...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/AssetGuardianAiStack-ap-southeast-1/BootstrapVersion": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "BootstrapVersion"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/AssetGuardianAiStack-ap-southeast-1/CheckBootstrapVersion": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CheckBootstrapVersion"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/AssetGuardianAiStack-ap-southeast-1/AssetGuardianKey/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "AssetGuardianKeyEDF60A25"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, jsii runtime, node internals...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/AssetGuardianAiStack-ap-southeast-1/AccessLogsBucket/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "AccessLogsBucket83982689"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, jsii runtime, node internals...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/AssetGuardianAiStack-ap-southeast-1/AssetPhotosBucket/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "AssetPhotosBucketDDC6D3C4"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, jsii runtime, node internals...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/AssetGuardianAiStack-ap-southeast-1/AssetCmdbTable/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "AssetCmdbTableAD37F34F"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, jsii runtime, node internals...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/AssetGuardianAiStack-ap-southeast-1/PreSignUpTriggerRole/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "PreSignUpTriggerRole98DEC814"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, jsii runtime, node internals...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/AssetGuardianAiStack-ap-southeast-1/PreSignUpDomainCheck/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "PreSignUpDomainCheck4048C7D9"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, jsii runtime, node internals...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/AssetGuardianAiStack-ap-southeast-1/PortalUserPool/PreSignUpCognito": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "PortalUserPoolPreSignUpCognito8BA80EE5"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, jsii runtime...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/AssetGuardianAiStack-ap-southeast-1/PortalUserPool/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "PortalUserPoolF6EA700C"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, jsii runtime, node internals...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/AssetGuardianAiStack-ap-southeast-1/PortalUnauthRole/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "PortalUnauthRole06C80147"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, jsii runtime, node internals...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/AssetGuardianAiStack-ap-southeast-1/PortalAuthRole/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "PortalAuthRole69A1DC88"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, jsii runtime, node internals...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/AssetGuardianAiStack-ap-southeast-1/PortalAdminRole/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "PortalAdminRoleF850A748"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, jsii runtime, node internals...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/AssetGuardianAiStack-ap-southeast-1/AWSCDKCfnUtilsProviderCustomResourceProvider/Role": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "AWSCDKCfnUtilsProviderCustomResourceProviderRoleFE0EE867"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, jsii runtime...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/AssetGuardianAiStack-ap-southeast-1/AWSCDKCfnUtilsProviderCustomResourceProvider/Handler": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "AWSCDKCfnUtilsProviderCustomResourceProviderHandlerCF82AA57"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, jsii runtime...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/AssetGuardianAiStack-ap-southeast-1/HarnessInvokeLogGroup/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "HarnessInvokeLogGroupB264183F"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, jsii runtime, node internals...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/AssetGuardianAiStack-ap-southeast-1/PolicyAuditLogGroup/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "PolicyAuditLogGroup643B4657"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, jsii runtime, node internals...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/AssetGuardianAiStack-ap-southeast-1/OriginVerifySecret/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "OriginVerifySecret1DED2FB3"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, jsii runtime, node internals...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/AssetGuardianAiStack-ap-southeast-1/HarnessInvokeRole/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "HarnessInvokeRoleC531F999"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, jsii runtime, node internals...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/AssetGuardianAiStack-ap-southeast-1/HarnessInvokeFunction/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "HarnessInvokeFunctionB3C2D9B3"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, jsii runtime, node internals...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/AssetGuardianAiStack-ap-southeast-1/PortalBucket/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "PortalBucketF34416C0"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, jsii runtime, node internals...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/AssetGuardianAiStack-ap-southeast-1/PortalDistribution/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "PortalDistribution104A9AF0"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, jsii runtime, node internals...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/AssetGuardianAiStack-ap-southeast-1/Custom::CDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756C/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CustomCDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756C81C01536"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, jsii runtime...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/AssetGuardianAiStack-ap-southeast-1/AssetGuardianHttpApi/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "AssetGuardianHttpApi1B0ECE58"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, jsii runtime, node internals...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/AssetGuardianAiStack-ap-southeast-1/ApiDistribution/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ApiDistribution1DFA7F7C"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, jsii runtime, node internals...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/AssetGuardianAiStack-ap-southeast-1/CDKMetadata/Default": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CDKMetadata"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, jsii runtime...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/AssetGuardianAiStack-ap-southeast-1/AccessLogsBucket/Policy/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "AccessLogsBucketPolicy7F77476F"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, jsii runtime...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/AssetGuardianAiStack-ap-southeast-1/AssetPhotosBucket/Policy/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "AssetPhotosBucketPolicyF427797A"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, jsii runtime...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/AssetGuardianAiStack-ap-southeast-1/PortalUserPool/PortalUserPoolClient/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "PortalUserPoolPortalUserPoolClient20F57860"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, jsii runtime, node internals...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/AssetGuardianAiStack-ap-southeast-1/PortalUnauthRole/DefaultPolicy/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "PortalUnauthRoleDefaultPolicyB2C31493"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, jsii runtime...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/AssetGuardianAiStack-ap-southeast-1/PortalAuthRole/DefaultPolicy/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "PortalAuthRoleDefaultPolicyF96D7CB7"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, jsii runtime...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/AssetGuardianAiStack-ap-southeast-1/PortalAdminRole/DefaultPolicy/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "PortalAdminRoleDefaultPolicyBE82E605"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, jsii runtime...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/AssetGuardianAiStack-ap-southeast-1/RoleMappingsJson/Resource/Default": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "RoleMappingsJson9F00042B"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, jsii runtime, node internals...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/AssetGuardianAiStack-ap-southeast-1/HarnessInvokeRole/DefaultPolicy/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "HarnessInvokeRoleDefaultPolicy92BD9942"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, jsii runtime...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/AssetGuardianAiStack-ap-southeast-1/PortalBucket/Policy/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "PortalBucketPolicyAF0FA7F5"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, jsii runtime...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/AssetGuardianAiStack-ap-southeast-1/PortalDeployment/AwsCliLayer/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "PortalDeploymentAwsCliLayer156D5241"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, jsii runtime...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/AssetGuardianAiStack-ap-southeast-1/PortalDeployment/CustomResource/Default": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "PortalDeploymentCustomResourceE082888D"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, jsii runtime...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/AssetGuardianAiStack-ap-southeast-1/Custom::CDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756C/ServiceRole/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CustomCDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756CServiceRole89A01265"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/AssetGuardianAiStack-ap-southeast-1/AssetGuardianHttpApi/DefaultStage/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "AssetGuardianHttpApiDefaultStage66C9C939"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, jsii runtime, node internals...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/AssetGuardianAiStack-ap-southeast-1/AssetGuardianHttpApi/POST--inspect/HarnessIntegration-Permission": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "AssetGuardianHttpApiPOSTinspectHarnessIntegrationPermissionA71A6D95"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...C:\\Users\\kalx\\AppData\\Local\\Temp\\jsii-kernel-AKo4ux\\node_modules\\aws-cdk-lib\\aws-apigatewayv2\\lib\\http\\api.js:1:96 in aws-cdk-lib...",
+        "Array.map (:)",
+        "...aws-cdk-lib, jsii runtime..."
+      ]
+    }
+  ],
+  "/AssetGuardianAiStack-ap-southeast-1/AssetGuardianHttpApi/POST--inspect/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "AssetGuardianHttpApiPOSTinspectD1E03192"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...C:\\Users\\kalx\\AppData\\Local\\Temp\\jsii-kernel-AKo4ux\\node_modules\\aws-cdk-lib\\aws-apigatewayv2\\lib\\http\\api.js:1:96 in aws-cdk-lib...",
+        "Array.map (:)",
+        "...aws-cdk-lib, jsii runtime..."
+      ]
+    }
+  ],
+  "/AssetGuardianAiStack-ap-southeast-1/AssetGuardianHttpApi/POST--handover/HarnessIntegration-Permission": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "AssetGuardianHttpApiPOSThandoverHarnessIntegrationPermission71928E78"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...C:\\Users\\kalx\\AppData\\Local\\Temp\\jsii-kernel-AKo4ux\\node_modules\\aws-cdk-lib\\aws-apigatewayv2\\lib\\http\\api.js:1:96 in aws-cdk-lib...",
+        "Array.map (:)",
+        "...aws-cdk-lib, jsii runtime..."
+      ]
+    }
+  ],
+  "/AssetGuardianAiStack-ap-southeast-1/AssetGuardianHttpApi/POST--handover/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "AssetGuardianHttpApiPOSThandover6B20D297"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...C:\\Users\\kalx\\AppData\\Local\\Temp\\jsii-kernel-AKo4ux\\node_modules\\aws-cdk-lib\\aws-apigatewayv2\\lib\\http\\api.js:1:96 in aws-cdk-lib...",
+        "Array.map (:)",
+        "...aws-cdk-lib, jsii runtime..."
+      ]
+    }
+  ],
+  "/AssetGuardianAiStack-ap-southeast-1/AssetGuardianHttpApi/POST--return/HarnessIntegration-Permission": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "AssetGuardianHttpApiPOSTreturnHarnessIntegrationPermissionF1BBC115"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...C:\\Users\\kalx\\AppData\\Local\\Temp\\jsii-kernel-AKo4ux\\node_modules\\aws-cdk-lib\\aws-apigatewayv2\\lib\\http\\api.js:1:96 in aws-cdk-lib...",
+        "Array.map (:)",
+        "...aws-cdk-lib, jsii runtime..."
+      ]
+    }
+  ],
+  "/AssetGuardianAiStack-ap-southeast-1/AssetGuardianHttpApi/POST--return/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "AssetGuardianHttpApiPOSTreturn313A9882"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...C:\\Users\\kalx\\AppData\\Local\\Temp\\jsii-kernel-AKo4ux\\node_modules\\aws-cdk-lib\\aws-apigatewayv2\\lib\\http\\api.js:1:96 in aws-cdk-lib...",
+        "Array.map (:)",
+        "...aws-cdk-lib, jsii runtime..."
+      ]
+    }
+  ],
+  "/AssetGuardianAiStack-ap-southeast-1/AssetGuardianHttpApi/POST--declare/HarnessIntegration-Permission": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "AssetGuardianHttpApiPOSTdeclareHarnessIntegrationPermissionA017D0D6"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...C:\\Users\\kalx\\AppData\\Local\\Temp\\jsii-kernel-AKo4ux\\node_modules\\aws-cdk-lib\\aws-apigatewayv2\\lib\\http\\api.js:1:96 in aws-cdk-lib...",
+        "Array.map (:)",
+        "...aws-cdk-lib, jsii runtime..."
+      ]
+    }
+  ],
+  "/AssetGuardianAiStack-ap-southeast-1/AssetGuardianHttpApi/POST--declare/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "AssetGuardianHttpApiPOSTdeclare417E71D5"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...C:\\Users\\kalx\\AppData\\Local\\Temp\\jsii-kernel-AKo4ux\\node_modules\\aws-cdk-lib\\aws-apigatewayv2\\lib\\http\\api.js:1:96 in aws-cdk-lib...",
+        "Array.map (:)",
+        "...aws-cdk-lib, jsii runtime..."
+      ]
+    }
+  ],
+  "/AssetGuardianAiStack-ap-southeast-1/PortalDistribution/Origin1/S3OriginAccessControl/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "PortalDistributionOrigin1S3OriginAccessControlEB064077"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, jsii runtime...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/AssetGuardianAiStack-ap-southeast-1/Custom::CDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756C/ServiceRole/DefaultPolicy/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CustomCDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756CServiceRoleDefaultPolicy88902FDF"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/AssetGuardianAiStack-ap-southeast-1/AssetGuardianHttpApi/POST--inspect/HarnessIntegration/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "AssetGuardianHttpApiPOSTinspectHarnessIntegrationBE737BEE"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...C:\\Users\\kalx\\AppData\\Local\\Temp\\jsii-kernel-AKo4ux\\node_modules\\aws-cdk-lib\\aws-apigatewayv2\\lib\\http\\api.js:1:96 in aws-cdk-lib...",
+        "Array.map (:)",
+        "...aws-cdk-lib, jsii runtime..."
+      ]
+    }
+  ]
+}

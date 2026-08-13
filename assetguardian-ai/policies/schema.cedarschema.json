@@ -1,0 +1,32 @@
+{
+  "AssetGuardian": {
+    "entityTypes": {
+      "User": {
+        "shape": {
+          "type": "Record",
+          "attributes": {
+            "role": { "type": "String", "required": false }
+          }
+        }
+      },
+      "Tool": {
+        "shape": { "type": "Record", "attributes": {} }
+      }
+    },
+    "actions": {
+      "InvokeTool": {
+        "appliesTo": {
+          "principalTypes": ["User"],
+          "resourceTypes": ["Tool"],
+          "context": {
+            "type": "Record",
+            "attributes": {
+              "authenticated": { "type": "Boolean", "required": false },
+              "requestCountInWindow": { "type": "Long", "required": false }
+            }
+          }
+        }
+      }
+    }
+  }
+}

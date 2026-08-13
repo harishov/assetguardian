@@ -1,0 +1,140 @@
+"""assetguardian-harness-invoke Lambda entrypoint.
+
+Downloads/references photos from S3, sanitizes all caller-supplied text
+fields (prompt-injection defense), routes the request to the matching
+Experiment-7 workflow, and returns a JSON result. Runs behind API Gateway
+HTTP API with AWS_IAM (SigV4) authorization and a WAFv2 Web ACL — see
+assetguardian_stack.py.
+"""
+import hmac
+import json
+import logging
+import os
+
+import boto3
+
+from agents.sanitize import SuspiciousInputError, sanitize_asset_id, sanitize_employee_id, sanitize_s3_key
+from orchestrator import PipelineHaltedError, WORKFLOWS
+
+logger = logging.getLogger()
+logger.setLevel(os.environ.get("LOG_LEVEL", "INFO"))
+
+PHOTOS_BUCKET_NAME = os.environ["PHOTOS_BUCKET_NAME"]
+
+# Origin sealing — see assetguardian_stack.py. CloudFront stamps this header on
+# every origin request; a caller hitting execute-api directly cannot produce it,
+# so the WAF-bypassing route is refused here. This sits alongside the route's
+# AWS_IAM authorizer rather than replacing it.
+ORIGIN_VERIFY_HEADER = os.environ.get("ORIGIN_VERIFY_HEADER", "x-origin-verify")
+ORIGIN_VERIFY_SECRET_ARN = os.environ.get("ORIGIN_VERIFY_SECRET_ARN", "")
+
+_secrets = boto3.client("secretsmanager") if ORIGIN_VERIFY_SECRET_ARN else None
+_origin_secret_cache = None
+
+
+def _origin_secret() -> str | None:
+    """Fetches and caches the shared secret for this execution environment.
+
+    Cached for the container's lifetime, so rotating the secret takes effect as
+    old containers age out. Rotation also needs a redeploy so CloudFront sends
+    the new value — rotate, redeploy, then the two are back in step.
+    """
+    global _origin_secret_cache
+    if _origin_secret_cache is None and _secrets is not None:
+        _origin_secret_cache = _secrets.get_secret_value(
+            SecretId=ORIGIN_VERIFY_SECRET_ARN
+        )["SecretString"]
+    return _origin_secret_cache
+
+
+def _from_cloudfront(event) -> bool:
+    if not ORIGIN_VERIFY_SECRET_ARN:
+        # Not configured (e.g. a local or pre-migration deploy) — don't lock the
+        # API out of its own front door.
+        return True
+    # API Gateway payload format 2.0 lowercases header names.
+    presented = (event.get("headers") or {}).get(ORIGIN_VERIFY_HEADER, "")
+    expected = _origin_secret() or ""
+    return bool(presented) and hmac.compare_digest(presented, expected)
+
+ROUTE_TO_WORKFLOW = {
+    "/handover": "handover",
+    "/return": "return",
+    "/declare": "declare",
+    "/inspect": "inspect",
+}
+
+
+def _response(status: int, body: dict) -> dict:
+    return {
+        "statusCode": status,
+        "headers": {"Content-Type": "application/json"},
+        "body": json.dumps(body, default=str),
+    }
+
+
+def _build_request(body: dict) -> dict:
+    """Sanitizes and normalizes the inbound request payload."""
+    image_keys = body.get("image_keys", [])
+    if not isinstance(image_keys, list) or not image_keys:
+        raise SuspiciousInputError("image_keys must be a non-empty list")
+    image_keys = [sanitize_s3_key(k) for k in image_keys]
+
+    req = {
+        "bucket": PHOTOS_BUCKET_NAME,
+        "image_keys": image_keys,
+        "label_image_key": sanitize_s3_key(body.get("label_image_key")),
+        "white_screen_key": sanitize_s3_key(body.get("white_screen_key")),
+        "black_screen_key": sanitize_s3_key(body.get("black_screen_key")),
+        "color_pattern_key": sanitize_s3_key(body.get("color_pattern_key")),
+        "asset_id": sanitize_asset_id(body.get("asset_id")),
+        "serial_number": sanitize_asset_id(body.get("serial_number")),
+        "employee_id": sanitize_employee_id(body.get("employee_id")),
+        "session_id": sanitize_employee_id(body.get("session_id")) or body.get("employee_id"),
+        "device_type": (body.get("device_type") or "laptop").lower()[:32],
+        "declared_views": body.get("declared_views", []),
+        "expected_otp": body.get("expected_otp"),
+        "is_critical": bool(body.get("is_critical")),
+        "check_physical_damage": body.get("check_physical_damage", True),
+        "check_display_health": bool(body.get("check_display_health")),
+        "attestation_confirmed": bool(body.get("attestation_confirmed")),
+        "attestation_text": (body.get("attestation_text") or "")[:1000],
+        "prior_photo_hashes": body.get("prior_photo_hashes", []),
+    }
+    return req
+
+
+def lambda_handler(event, context):
+    if not _from_cloudfront(event):
+        logger.warning("Rejected request that did not arrive via CloudFront")
+        return _response(403, {"error": "forbidden"})
+
+    route_key = event.get("routeKey", "")
+    path = route_key.split(" ")[-1] if " " in route_key else event.get("rawPath", "")
+    workflow_key = ROUTE_TO_WORKFLOW.get(path)
+
+    if workflow_key is None:
+        return _response(404, {"error": "unknown_route", "path": path})
+
+    try:
+        body = json.loads(event.get("body") or "{}")
+    except json.JSONDecodeError:
+        return _response(400, {"error": "invalid_json_body"})
+
+    try:
+        req = _build_request(body)
+    except SuspiciousInputError as e:
+        logger.warning("Rejected suspicious input: %s", e)
+        return _response(400, {"error": "invalid_input", "detail": str(e)})
+
+    workflow_fn = WORKFLOWS[workflow_key]
+
+    try:
+        result = workflow_fn(req)
+        return _response(200, result)
+    except PipelineHaltedError as e:
+        logger.info("Pipeline halted at %s", e.stage)
+        return _response(422, {"error": "pipeline_halted", "stage": e.stage, "detail": e.detail})
+    except Exception:
+        logger.exception("Unhandled error in workflow %s", workflow_key)
+        return _response(500, {"error": "internal_error"})

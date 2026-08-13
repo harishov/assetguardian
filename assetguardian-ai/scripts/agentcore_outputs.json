@@ -1,0 +1,9 @@
+{
+  "policy_engine_id": "assetguardian_policy_engine-mru_4gvch5",
+  "policy_engine_arn": "arn:aws:bedrock-agentcore:us-east-1:418748712186:policy-engine/assetguardian_policy_engine-mru_4gvch5",
+  "gateway_id": "assetguardian-enterprise-gateway-ojercetxjl",
+  "gateway_arn": "",
+  "harness_id": "assetguardian_harness-YjKUJodC1G",
+  "harness_arn": "arn:aws:bedrock-agentcore:us-east-1:418748712186:harness/assetguardian_harness-YjKUJodC1G",
+  "evaluator_arns": []
+}
