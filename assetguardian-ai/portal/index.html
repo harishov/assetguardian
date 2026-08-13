@@ -1075,6 +1075,18 @@ function enterApp() {
   $("tabLogs").style.display = session.isAdmin ? "inline-block" : "none";
   showTab("inspection");
   showView("app");
+
+  // Restore last inspection result if available
+  try {
+    const saved = localStorage.getItem("ag_last_result");
+    if (saved) {
+      const { workflow, data, savedAt } = JSON.parse(saved);
+      // Show results if saved within last 24 hours
+      if (savedAt && (Date.now() - savedAt) < 86400000) {
+        renderResults(workflow, data);
+      }
+    }
+  } catch {}
 }
 
 // ---------- App tabs (Inspection / Event Logs) ----------
@@ -1444,6 +1456,9 @@ function escapeHtml(value) {
 }
 
 function renderResults(workflow, data) {
+  // Persist results to localStorage so they survive page refresh
+  try { localStorage.setItem("ag_last_result", JSON.stringify({ workflow, data, savedAt: Date.now() })); } catch {}
+
   const el = $("results");
   const stages = data.stages || {};
   let html = `<h2>Results</h2>`;
