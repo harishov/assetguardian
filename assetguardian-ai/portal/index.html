@@ -40,6 +40,7 @@
     justify-content: center;
     overflow: hidden;
     padding: 40px 24px;
+    min-height: 100vh;
   }
   .hero-bg { position: absolute; inset: 0; z-index: 0; overflow: hidden; }
   .blob { position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.35; }
@@ -50,6 +51,7 @@
     position: relative;
     z-index: 1;
     max-width: 720px;
+    margin: 0 auto;
     text-align: center;
   }
   .logo-mark { width: 104px; height: 104px; margin: 0 auto 20px; display: block; }
@@ -100,11 +102,16 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    min-height: 100vh;
     padding: 40px 20px;
   }
   .auth-card {
     width: 100%;
     max-width: 400px;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 32px;
+    background: var(--panel);
   }
   .auth-card .brand-row { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
   .auth-card .brand-row span { font-weight: 700; font-size: 15px; }
@@ -1090,18 +1097,6 @@ function enterApp() {
   $("tabLogs").style.display = session.isAdmin ? "inline-block" : "none";
   showTab("inspection");
   showView("app");
-
-  // Restore last inspection result for THIS user only
-  try {
-    const saved = localStorage.getItem("ag_last_result_" + (session?.email || ""));
-    if (saved) {
-      const { workflow, data, savedAt } = JSON.parse(saved);
-      // Show results if saved within last 24 hours
-      if (savedAt && (Date.now() - savedAt) < 86400000) {
-        renderResults(workflow, data);
-      }
-    }
-  } catch {}
 }
 
 // ---------- App tabs (Inspection / Event Logs) ----------
@@ -1681,9 +1676,25 @@ async function emailResult() {
 function startNewInspection() {
   // Clear cached result for this user
   try { localStorage.removeItem("ag_last_result_" + (session?.email || "")); } catch {}
-  // Reset form
+  // Reset form fields
   const form = $("inspectionForm");
   if (form) form.reset();
+  // Clear uploaded photos/video state
+  media.photos = [];
+  media.label = null;
+  media.video = null;
+  media.frames = [];
+  // Clear thumbnail previews
+  const thumbs = $("devicePhotoThumbs");
+  if (thumbs) thumbs.innerHTML = "";
+  const labelThumb = $("labelPhotoThumbs");
+  if (labelThumb) labelThumb.innerHTML = "";
+  const videoThumb = $("videoThumb");
+  if (videoThumb) videoThumb.innerHTML = "";
+  // Reset file inputs
+  document.querySelectorAll('input[type="file"]').forEach(input => { input.value = ""; });
+  // Clear status
+  setFormStatus($("status"), "");
   // Clear results section
   $("results").innerHTML = `<h2>Results</h2><div class="placeholder">Nothing submitted yet. When you run an inspection, these stages execute in order — the first two can stop the run before it reaches the AI analysis.</div>`;
   // Scroll to top
