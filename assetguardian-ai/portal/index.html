@@ -1857,46 +1857,25 @@ $("inspectionForm").addEventListener("submit", async (e) => {
     const { httpStatus, data } = await invokeWorkflow(route, payload);
 
     if (httpStatus === 503) {
-      // API Gateway timed out but Lambda may still be running.
-      // Poll history until the result appears.
-      setFormStatus($("status"), "Inspection is processing server-side… waiting for result (this may take up to 60s).");
-      const maxAttempts = 12;
-      let found = null;
-      for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-        await new Promise(r => setTimeout(r, 5000));
-        setFormStatus($("status"), `Waiting for result… (${attempt * 5}s)`);
-        try {
-          const histResp = await invokeWorkflow("/history", { limit: 5 });
-          if (histResp.httpStatus === 200 && Array.isArray(histResp.data)) {
-            // Find a matching recent inspection (same session/asset)
-            found = histResp.data.find(h =>
-              h.sessionId === sessionId ||
-              (h.assetId === ($("assetId").value || "").toUpperCase() && h.employeeId === ($("employeeId").value || "").toUpperCase())
-            );
-            if (found) break;
-          }
-        } catch {}
-      }
-      if (found) {
-        setFormStatus($("status"), "Inspection complete!");
-        // History records are flat — reshape to match pipeline output
-        const reshapedData = {
-          workflow: found.workflow || workflow,
-          sla_hours: null,
-          pipeline_elapsed_seconds: found.elapsedSeconds || null,
-          stages: {
-            identity_verification: found.identityVerification || (found.assetId ? { verified: true, cmdb_status: "found", serial_match: true, ownership_match: true, cmdb_record: { deviceModel: found.deviceModel || "—" } } : null),
-            vision_quality_gate: found.visionQuality || (found.qualityScore ? { passed: true, overall_score: found.qualityScore } : null),
-            damage_detection: found.damageDetection || { damage_severity_score: parseInt(found.damageScore || "0"), severity_category: found.damageSeverity || "Minor", condition_grade: found.conditionGrade || "—", detected_damage: found.detectedDamage || [] },
-            fraud_detection: found.fraudDetection || { risk_level: found.fraudRisk || "Low", legitimacy_confidence: found.fraudConfidence || "—", failed_check_count: found.fraudFailedChecks || 0 },
-            lifecycle_decision: found.lifecycleDecision || { decision: found.decision || "—", reason: found.lifecycleReason || "—", estimated_cost_usd: found.estimatedCost || "—", requires_dual_approval: found.requiresDualApproval || false },
-            warranty_verification: found.warrantyVerification || null,
-          },
-        };
-        renderResults(workflow, reshapedData);
-      } else {
-        setFormStatus($("status"), "Inspection submitted. Results may take a moment — check the Event Logs tab.", "error");
-      }
+      // API Gateway timed out (30s limit) but Lambda continues processing.
+      // The result will be saved to history. Show a clear message.
+      setFormStatus($("status"), "");
+      const el = $("results");
+      el.innerHTML = `<h2>Results</h2>
+        <div class="stage" style="border-color:var(--warn);">
+          <h3>⏳ Inspection Processing</h3>
+          <p style="color:var(--muted);font-size:13px;line-height:1.6;">
+            Your inspection is running server-side. The AI pipeline takes 30–60 seconds to complete all stages
+            (identity, vision, damage, fraud, lifecycle, warranty).
+          </p>
+          <p style="color:var(--muted);font-size:13px;line-height:1.6;margin-top:10px;">
+            The result will be saved automatically. <strong>Reload the page in 30 seconds</strong> and check
+            the Event Logs tab, or submit again — if the inspection already completed, you'll see the result immediately.
+          </p>
+          <p style="color:var(--accent);font-size:12px;margin-top:12px;">
+            This happens because the API gateway has a 30-second limit, but the inspection pipeline continues running.
+          </p>
+        </div>`;
     } else {
       setFormStatus($("status"), `Done (HTTP ${httpStatus}).`);
       renderResults(workflow, data);
