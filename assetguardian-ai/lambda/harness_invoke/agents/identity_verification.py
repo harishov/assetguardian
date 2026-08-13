@@ -53,6 +53,51 @@ def _lookup_cmdb(asset_id: str | None, serial_number: str | None) -> tuple[dict 
         return record, "local_fallback"
 
 
+def _auto_register_asset(asset_id: str | None, serial_number: str | None, employee_id: str | None) -> dict:
+    """Auto-register an unknown asset in the CMDB and return the new record.
+
+    When a device is submitted for inspection but doesn't exist in the CMDB,
+    we create an entry rather than blocking the inspection. The record is
+    flagged as auto-registered so admins can review later.
+    """
+    import uuid
+    from datetime import datetime
+
+    table = _dynamodb.Table(CMDB_TABLE_NAME)
+
+    # Use provided asset_id or generate one
+    new_asset_id = asset_id if asset_id else f"AUTO-{uuid.uuid4().hex[:8].upper()}"
+    new_serial = serial_number or ""
+    new_employee = employee_id or "UNKNOWN"
+
+    record = {
+        "assetId": new_asset_id,
+        "serialNumber": new_serial,
+        "assignedUser": new_employee,
+        "assignedUserName": "",
+        "assignedUserEmail": "",
+        "deviceModel": "Unknown (pending inspection)",
+        "manufacturer": "",
+        "warrantyActive": False,
+        "deviceAgeMonths": 0,
+        "repairCount": 0,
+        "employeeRole": "standard",
+        "status": "AutoRegistered",
+        "modelInferred": False,
+        "registeredAt": datetime.utcnow().isoformat() + "Z",
+        "autoRegistered": True,
+    }
+
+    try:
+        table.put_item(Item=record)
+    except Exception as e:
+        # Non-blocking — if write fails, still return the record for the pipeline
+        import logging
+        logging.getLogger().warning("Auto-register CMDB write failed: %s", e)
+
+    return record
+
+
 def run(
     *,
     bucket: str,
@@ -69,14 +114,13 @@ def run(
     record, source = _lookup_cmdb(asset_id, provided_serial_number)
 
     if record is None:
-        return {
-            "agent": "identity_verification",
-            "verified": False,
-            "reason": "asset_not_found_in_cmdb",
-            "cmdb_status": "NotFound",
-            "cmdb_source": source,
-            "ocr": ocr_result,
-        }
+        # Auto-create CMDB entry for unregistered assets
+        record = _auto_register_asset(
+            asset_id=asset_id,
+            serial_number=provided_serial_number,
+            employee_id=employee_id,
+        )
+        source = "auto_registered"
 
     cmdb_serial = record.get("serialNumber")
     serial_match = bool(

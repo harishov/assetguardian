@@ -80,8 +80,9 @@ def _run_identity_stage(req: dict) -> dict:
         provided_serial_number=req.get("serial_number"),
         employee_id=req.get("employee_id"),
     )
-    if not result["verified"]:
-        # Fail-fast: identity failure halts the entire pipeline immediately.
+    if not result["verified"] and result.get("cmdb_source") != "auto_registered":
+        # Fail-fast: identity failure halts the pipeline — but auto-registered
+        # assets always pass since they're self-assigned.
         raise PipelineHaltedError("identity_verification", result)
     return result
 
