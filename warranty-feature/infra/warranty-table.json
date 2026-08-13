@@ -1,0 +1,30 @@
+{
+  "TableName": "assetguardian-warranty-cache",
+  "KeySchema": [
+    {
+      "AttributeName": "cacheKey",
+      "KeyType": "HASH"
+    }
+  ],
+  "AttributeDefinitions": [
+    {
+      "AttributeName": "cacheKey",
+      "AttributeType": "S"
+    }
+  ],
+  "BillingMode": "PAY_PER_REQUEST",
+  "TimeToLiveSpecification": {
+    "AttributeName": "ttl",
+    "Enabled": true
+  },
+  "Tags": [
+    {
+      "Key": "Project",
+      "Value": "AssetGuardian"
+    },
+    {
+      "Key": "Feature",
+      "Value": "WarrantyVerification"
+    }
+  ]
+}
