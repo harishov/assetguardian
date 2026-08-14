@@ -252,14 +252,18 @@ def lambda_handler(event, context):
         return _handle_gateway_invocation(event, context, tool_name, request_id)
 
     if not _from_cloudfront(event):
-        return _error(
-            403,
-            "forbidden",
-            "This request didn't come through the AssetGuardian portal. "
-            "Please open the portal and try again.",
-            request_id,
-            log_detail="request did not carry the CloudFront origin-verify header",
-        )
+        # Allow /chat to bypass origin check — protected by AWS_IAM auth + admin check
+        route_key = event.get("routeKey", "")
+        raw_path = route_key.split(" ")[-1] if " " in route_key else event.get("rawPath", "")
+        if raw_path != "/chat":
+            return _error(
+                403,
+                "forbidden",
+                "This request didn't come through the AssetGuardian portal. "
+                "Please open the portal and try again.",
+                request_id,
+                log_detail="request did not carry the CloudFront origin-verify header",
+            )
 
     route_key = event.get("routeKey", "")
     path = route_key.split(" ")[-1] if " " in route_key else event.get("rawPath", "")
@@ -348,7 +352,7 @@ def lambda_handler(event, context):
             body = json.loads(event.get("body") or "{}")
         except json.JSONDecodeError:
             body = {}
-        # Admin check
+        # Admin check via Cognito identity (no origin-verify needed — IAM auth is sufficient)
         identity = history.caller_identity(event)
         if not identity.get("is_admin"):
             return _error(403, "forbidden", "AI Chat is available for administrators only.", request_id)
