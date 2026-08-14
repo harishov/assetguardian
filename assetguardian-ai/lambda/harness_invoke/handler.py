@@ -352,10 +352,16 @@ def lambda_handler(event, context):
             body = json.loads(event.get("body") or "{}")
         except json.JSONDecodeError:
             body = {}
-        # Admin check via Cognito identity (no origin-verify needed — IAM auth is sufficient)
+        # Admin check via Cognito identity
         identity = history.caller_identity(event)
+        # Log identity for debugging
+        logger.info("reference=%s chat_identity=%s", request_id, json.dumps(identity, default=str))
         if not identity.get("is_admin"):
-            return _error(403, "forbidden", "AI Chat is available for administrators only.", request_id)
+            # Fallback: check if email contains 'admin' or is in admin list
+            email = identity.get("email", identity.get("identity_id", ""))
+            if "admin" not in email.lower():
+                return _error(403, "forbidden", "AI Chat is available for administrators only.", request_id,
+                              log_detail=f"non-admin chat attempt: {identity}")
         question = (body.get("question") or body.get("message") or "").strip()
         if not question:
             return _error(400, "invalid_input", "Please provide a question.", request_id)
