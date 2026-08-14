@@ -210,6 +210,18 @@
   }
   .topbar-user button:hover { border-color: var(--accent); }
   .nav-tabs { display: flex; gap: 6px; max-width: 980px; margin: 14px auto 0; padding: 0 32px; }
+  .chat-suggestion {
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 6px 12px;
+    font-size: 11px;
+    color: var(--muted);
+    cursor: pointer;
+    transition: border-color 0.15s;
+  }
+  .chat-suggestion:hover { border-color: var(--accent); color: var(--accent); }
+
   .nav-tab {
     background: transparent;
     border: 1px solid var(--border);
@@ -598,6 +610,7 @@
 
   <div class="nav-tabs" id="navTabs">
     <button class="nav-tab active" id="tabInspection">Inspection</button>
+    <button class="nav-tab" id="tabChat" style="display:none;">🤖 AI Chat</button>
     <button class="nav-tab" id="tabLogs" style="display:none;">Event Logs</button>
   </div>
 
@@ -734,6 +747,36 @@
       </div>
     </section>
   </main>
+  </div>
+
+  <div id="tabContentChat" style="display:none;">
+    <header>
+      <h1>🤖 AI Asset Assistant</h1>
+      <p>Ask questions about your fleet — ghost assets, warranties, compliance, damage, procurement, sustainability, and more.</p>
+    </header>
+    <main>
+      <div class="card" id="chatContainer" style="max-width:800px;">
+        <div id="chatMessages" style="min-height:300px;max-height:500px;overflow-y:auto;margin-bottom:16px;padding:12px;background:var(--panel-2);border-radius:10px;">
+          <div class="chat-msg bot" style="margin-bottom:12px;">
+            <p style="font-size:13px;color:var(--muted);background:var(--panel);padding:10px 14px;border-radius:10px;display:inline-block;max-width:90%;">
+              Hello! I'm your Asset Management AI. Ask me about ghost assets, warranties, compliance, fleet health, damage trends, procurement, or fraud detection.
+            </p>
+          </div>
+        </div>
+        <form id="chatForm" onsubmit="sendChatMessage(event)" style="display:flex;gap:8px;">
+          <input type="text" id="chatInput" placeholder="e.g. How many ghost assets do we have?" style="flex:1;font-size:14px;" autocomplete="off" />
+          <button type="submit" class="btn primary" id="chatSendBtn" style="padding:10px 20px;font-size:14px;">Send</button>
+        </form>
+        <div style="margin-top:10px;display:flex;flex-wrap:wrap;gap:6px;" id="chatSuggestions">
+          <button type="button" class="chat-suggestion" onclick="askSuggestion(this)">How many ghost assets?</button>
+          <button type="button" class="chat-suggestion" onclick="askSuggestion(this)">Warranty expiring soon?</button>
+          <button type="button" class="chat-suggestion" onclick="askSuggestion(this)">Fleet health overview</button>
+          <button type="button" class="chat-suggestion" onclick="askSuggestion(this)">Worst condition devices?</button>
+          <button type="button" class="chat-suggestion" onclick="askSuggestion(this)">Any fraud detected?</button>
+          <button type="button" class="chat-suggestion" onclick="askSuggestion(this)">Compliance status?</button>
+        </div>
+      </div>
+    </main>
   </div>
 
   <div id="tabContentLogs" style="display:none;">
@@ -1095,6 +1138,7 @@ function enterApp() {
   badge.textContent = session.isAdmin ? "Admin" : "Employee";
   badge.className = "pill " + (session.isAdmin ? "admin" : "employee");
   $("tabLogs").style.display = session.isAdmin ? "inline-block" : "none";
+  $("tabChat").style.display = session.isAdmin ? "inline-block" : "none";
   showTab("inspection");
   showView("app");
 }
@@ -1103,9 +1147,12 @@ function enterApp() {
 
 function showTab(name) {
   const isLogs = name === "logs";
-  $("tabContentInspection").style.display = isLogs ? "none" : "block";
+  const isChat = name === "chat";
+  $("tabContentInspection").style.display = (!isLogs && !isChat) ? "block" : "none";
+  $("tabContentChat").style.display = isChat ? "block" : "none";
   $("tabContentLogs").style.display = isLogs ? "block" : "none";
-  $("tabInspection").className = "nav-tab" + (isLogs ? "" : " active");
+  $("tabInspection").className = "nav-tab" + (!isLogs && !isChat ? " active" : "");
+  $("tabChat").className = "nav-tab" + (isChat ? " active" : "");
   $("tabLogs").className = "nav-tab" + (isLogs ? " active" : "");
   if (isLogs && !logsLoadedOnce) {
     logsLoadedOnce = true;
@@ -1114,10 +1161,63 @@ function showTab(name) {
 }
 
 $("tabInspection").addEventListener("click", () => showTab("inspection"));
+$("tabChat").addEventListener("click", () => showTab("chat"));
 $("tabLogs").addEventListener("click", () => showTab("logs"));
 $("refreshLogsBtn").addEventListener("click", () => loadLogs());
 $("logGroupSelect").addEventListener("change", () => loadLogs());
 $("logRangeSelect").addEventListener("change", () => loadLogs());
+
+// ---------- AI Chat ----------
+
+async function sendChatMessage(e) {
+  e.preventDefault();
+  const input = $("chatInput");
+  const question = input.value.trim();
+  if (!question) return;
+
+  const messages = $("chatMessages");
+  const btn = $("chatSendBtn");
+
+  // Show user message
+  messages.innerHTML += `<div style="text-align:right;margin-bottom:12px;"><p style="font-size:13px;color:var(--text);background:var(--accent);padding:10px 14px;border-radius:10px;display:inline-block;max-width:80%;">${escapeHtml(question)}</p></div>`;
+  input.value = "";
+  btn.disabled = true;
+  btn.textContent = "...";
+
+  // Show typing indicator
+  const typingId = "typing-" + Date.now();
+  messages.innerHTML += `<div id="${typingId}" style="margin-bottom:12px;"><p style="font-size:13px;color:var(--muted);background:var(--panel);padding:10px 14px;border-radius:10px;display:inline-block;">Thinking...</p></div>`;
+  messages.scrollTop = messages.scrollHeight;
+
+  try {
+    const { httpStatus, data } = await invokeWorkflow("/chat", { question });
+    // Remove typing indicator
+    const typingEl = document.getElementById(typingId);
+    if (typingEl) typingEl.remove();
+
+    if (httpStatus === 200 && data.answer) {
+      // Format answer (convert newlines and bullets)
+      const formatted = escapeHtml(data.answer).replace(/\n/g, "<br>").replace(/• /g, "&#8226; ");
+      messages.innerHTML += `<div style="margin-bottom:12px;"><p style="font-size:13px;color:var(--text);background:var(--panel);padding:12px 14px;border-radius:10px;display:inline-block;max-width:90%;line-height:1.6;white-space:pre-wrap;">${formatted}</p></div>`;
+    } else {
+      const errMsg = data.message || data.error || "Something went wrong.";
+      messages.innerHTML += `<div style="margin-bottom:12px;"><p style="font-size:13px;color:var(--danger);background:var(--panel);padding:10px 14px;border-radius:10px;display:inline-block;">${escapeHtml(errMsg)}</p></div>`;
+    }
+  } catch (err) {
+    const typingEl = document.getElementById(typingId);
+    if (typingEl) typingEl.remove();
+    messages.innerHTML += `<div style="margin-bottom:12px;"><p style="font-size:13px;color:var(--danger);background:var(--panel);padding:10px 14px;border-radius:10px;display:inline-block;">Failed to reach AI. Please try again.</p></div>`;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "Send";
+    messages.scrollTop = messages.scrollHeight;
+  }
+}
+
+function askSuggestion(el) {
+  $("chatInput").value = el.textContent;
+  sendChatMessage(new Event("submit"));
+}
 
 let logsLoadedOnce = false;
 

@@ -74,6 +74,7 @@ ROUTE_TO_WORKFLOW = {
     "/inspect": "inspect",
     "/warranty": "warranty",
     "/warranty/vendors": "warranty_vendors",
+    "/chat": "chat",
 }
 
 
@@ -338,6 +339,31 @@ def lambda_handler(event, context):
             return _response(500, {
                 "error": "internal_error",
                 "message": "Warranty check failed. Please try again.",
+                "reference": request_id,
+            })
+
+    # ─── AI Chat route (admin-only) ───────────────────────────────────────────
+    if path == "/chat":
+        try:
+            body = json.loads(event.get("body") or "{}")
+        except json.JSONDecodeError:
+            body = {}
+        # Admin check
+        identity = history.caller_identity(event)
+        if not identity.get("is_admin"):
+            return _error(403, "forbidden", "AI Chat is available for administrators only.", request_id)
+        question = (body.get("question") or body.get("message") or "").strip()
+        if not question:
+            return _error(400, "invalid_input", "Please provide a question.", request_id)
+        try:
+            from agents import asset_chat
+            result = asset_chat.run(question, identity)
+            return _response(200, result)
+        except Exception:
+            logger.exception("reference=%s code=internal_error path=/chat", request_id)
+            return _response(500, {
+                "error": "internal_error",
+                "message": "Chat failed. Please try again.",
                 "reference": request_id,
             })
 
